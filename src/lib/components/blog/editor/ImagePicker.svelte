@@ -1,6 +1,8 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import * as Dialog from "$lib/components/ui/dialog";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
 
   interface Props {
     open: boolean;
@@ -43,19 +45,22 @@
       <div class="my-2 h-px bg-[#ffe1ca]/10"></div>
 
       <div class="space-y-3">
-        <!-- svelte-ignore a11y_label_has_associated_control -->
-        <label class="text-xs text-[#f7eee7]/40"> Or paste an image URL </label>
+        <Label for="image-url" class="text-[#f7eee7]/40">
+          Or paste an image URL
+        </Label>
 
-        <input
+        <Input
+          id="image-url"
           bind:value={url}
           placeholder="https://..."
-          class="w-full rounded-xl border border-[#ffe1ca]/10 bg-white/2.5 px-4 py-3 text-sm outline-none"
+          class="h-auto w-full rounded-xl border border-[#ffe1ca]/10 bg-white/2.5 px-4 py-3 text-sm"
         />
 
-        <input
+        <Input
+          id="image-alt"
           bind:value={alt}
           placeholder="Image description"
-          class="w-full rounded-xl border border-[#ffe1ca]/10 bg-white/2.5 px-4 py-3 text-sm outline-none"
+          class="h-auto w-full rounded-xl border border-[#ffe1ca]/10 bg-white/2.5 px-4 py-3 text-sm"
         />
 
         <Button class="w-full" disabled={!url.trim()} onclick={selectUrl}>

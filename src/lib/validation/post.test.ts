@@ -81,10 +81,21 @@ describe("createPostSchema", () => {
     },
   );
 
-  test("rejects empty content", () => {
+  test("allows empty content on drafts", () => {
     const result = createPostSchema.safeParse({
       ...validPost,
       content: "",
+      status: "draft",
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  test("rejects empty content when publishing", () => {
+    const result = createPostSchema.safeParse({
+      ...validPost,
+      content: "",
+      status: "published",
     });
 
     expect(result.success).toBe(false);

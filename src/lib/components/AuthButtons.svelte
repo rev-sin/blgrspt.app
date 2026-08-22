@@ -1,7 +1,8 @@
 <script lang="ts">
   import { authClient } from "$lib/auth-client";
+  import { Button } from "$lib/components/ui/button";
 
-  let loading = false;
+  let loading = $state(false);
 
   async function signIn(provider: "google" | "github") {
     loading = true;
@@ -15,12 +16,12 @@
   }
 </script>
 
-<div>
-  <button disabled={loading} onclick={() => signIn("google")}>
+<div class="flex flex-col gap-3">
+  <Button disabled={loading} onclick={() => signIn("google")}>
     Continue with Google
-  </button>
+  </Button>
 
-  <button disabled={loading} onclick={() => signIn("github")}>
+  <Button variant="outline" disabled={loading} onclick={() => signIn("github")}>
     Continue with GitHub
-  </button>
+  </Button>
 </div>

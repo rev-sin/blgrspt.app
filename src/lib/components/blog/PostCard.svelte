@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { Badge } from "$lib/components/ui/badge";
+  import { Button } from "$lib/components/ui/button";
+  import * as Card from "$lib/components/ui/card";
   interface Post {
     id: string;
     authorId: string;
@@ -71,17 +74,13 @@
   }
 </script>
 
-<article
-  class="group rounded-2xl border border-[#ffe1ca]/10
-         bg-[#15100e] p-7 transition
-         hover:border-[#ffe1ca]/20"
+<Card.Root
+  class="group rounded-2xl border border-[#ffe1ca]/10 bg-[#15100e] shadow-none ring-[#ffe1ca]/10 transition hover:border-[#ffe1ca]/20"
 >
-  <div class="mb-6 flex items-center gap-3">
+  <Card.Header class="flex flex-row items-center gap-3">
     <a
       href={`/u/${post.authorId}`}
-      class="font-[Oxanium] text-xs uppercase
-             tracking-[0.2em] text-[#d7a77e]/70
-             transition hover:text-[#f4ebe3]"
+      class="font-[Oxanium] text-xs uppercase tracking-[0.2em] text-[#d7a77e]/70 transition hover:text-[#f4ebe3]"
     >
       {post.authorName}
     </a>
@@ -100,90 +99,69 @@
     </span>
 
     {#if badge}
-      <span
-        class="rounded-full border border-[#ffe1ca]/15 px-2 py-0.5
-               font-[Oxanium] text-[10px] uppercase tracking-[0.12em]
-               text-[#d7a77e]/80"
-      >
-        {badge}
-      </span>
+      <Badge class="font-[Oxanium] text-[#d7a77e]/80">{badge}</Badge>
     {/if}
-  </div>
+  </Card.Header>
 
-  <a href={`/blog/${post.slug}`} class="block">
-    <h2
-      class="font-[Oxanium] text-2xl font-medium
-             tracking-[-0.5px] text-[#f7eee7]"
-    >
-      {post.title}
-    </h2>
-
-    {#if post.excerpt}
-      <p
-        class="mt-4 line-clamp-2 text-sm
-               leading-7 text-[#f4ebe3]/45"
+  <Card.Content>
+    <a href={`/blog/${post.slug}`} class="block">
+      <h2
+        class="font-[Oxanium] text-2xl font-medium tracking-[-0.5px] text-[#f7eee7]"
       >
-        {post.excerpt}
-      </p>
-    {:else}
-      <p
-        class="mt-4 line-clamp-2 text-sm
-               leading-7 text-[#f4ebe3]/45"
-      >
-        {post.content.replace(/[#*`>-]/g, "").trim()}
-      </p>
-    {/if}
-  </a>
+        {post.title}
+      </h2>
 
-  <div class="mt-7 border-t border-[#ffe1ca]/10 pt-5">
-    <div class="flex items-center justify-between">
-      <a
+      {#if post.excerpt}
+        <p class="mt-4 line-clamp-2 text-sm leading-7 text-[#f4ebe3]/45">
+          {post.excerpt}
+        </p>
+      {:else}
+        <p class="mt-4 line-clamp-2 text-sm leading-7 text-[#f4ebe3]/45">
+          {post.content.replace(/[#*`>-]/g, "").trim()}
+        </p>
+      {/if}
+    </a>
+  </Card.Content>
+
+  <Card.Footer class="border-t border-[#ffe1ca]/10">
+    <div class="flex w-full items-center justify-between">
+      <Button
         href={`/blog/${post.slug}`}
-        class="font-[Oxanium] text-xs uppercase
-               tracking-[0.15em] text-[#f4ebe3]/35
-               transition hover:text-[#f4ebe3]"
+        variant="link"
+        class="h-auto px-0 font-[Oxanium] text-xs tracking-[0.15em] text-[#f4ebe3]/35"
       >
         Read post
-      </a>
+      </Button>
 
       {#if isOwner}
         <div class="flex items-center gap-2">
-          <a
+          <Button
             href={`/blog/edit/${post.slug}`}
-            class="rounded-lg border border-[#ffe1ca]/10
-                   px-3 py-2 font-[Oxanium] text-[10px]
-                   uppercase tracking-[0.12em]
-                   text-[#f4ebe3]/50 transition
-                   hover:border-[#ffe1ca]/20
-                   hover:text-[#f4ebe3]"
+            variant="outline"
+            size="sm"
+            class="h-auto rounded-lg border-[#ffe1ca]/10 px-3 py-2 font-[Oxanium] text-[10px] tracking-[0.12em] text-[#f4ebe3]/50"
           >
             Edit
-          </a>
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="destructive"
+            size="sm"
             onclick={deletePost}
             disabled={deleting}
-            class="rounded-lg border border-red-300/10
-                   px-3 py-2 font-[Oxanium] text-[10px]
-                   uppercase tracking-[0.12em]
-                   text-red-200/40 transition
-                   hover:border-red-300/20
-                   hover:text-red-200/70
-                   disabled:cursor-not-allowed
-                   disabled:opacity-40"
+            class="h-auto rounded-lg px-3 py-2 font-[Oxanium] text-[10px] tracking-[0.12em]"
           >
             {deleting ? "Deleting..." : "Delete"}
-          </button>
+          </Button>
         </div>
       {:else}
         <span
-          class="text-lg text-[#f4ebe3]/20 transition
-                 group-hover:text-[#f4ebe3]/50"
+          class="text-lg text-[#f4ebe3]/20 transition group-hover:text-[#f4ebe3]/50"
         >
           →
         </span>
       {/if}
     </div>
-  </div>
-</article>
+  </Card.Footer>
+</Card.Root>

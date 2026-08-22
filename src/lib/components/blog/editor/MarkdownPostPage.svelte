@@ -2,6 +2,8 @@
   import EditorHeader from "./EditorHeader.svelte";
   import EditorMeta from "./EditorMeta.svelte";
   import MarkdownEditor from "./MarkdownEditor.svelte";
+  import * as Alert from "$lib/components/ui/alert";
+  import { apiErrorMessage, generateSlug } from "$lib/posts/slug";
 
   let title = $state("");
   let slug = $state("");
@@ -11,15 +13,7 @@
 
   let slugManuallyEdited = $state(false);
   let saving = $state(false);
-
-  function generateSlug(value: string) {
-    return value
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-");
-  }
+  let error = $state("");
 
   function handleTitleChange(value: string) {
     title = value;
@@ -38,16 +32,40 @@
     status: "draft" | "published",
     visibility: "private" | "unlisted" | "public",
   ) {
-    if (saving) return;
+    if (saving) {
+      return;
+    }
+
+    const nextTitle = title.trim();
+    const nextSlug = generateSlug(slug || nextTitle);
+
+    if (!nextTitle) {
+      error = "Add a title before saving.";
+      return;
+    }
+
+    if (!nextSlug) {
+      error = "Add a slug before saving.";
+      return;
+    }
+
+    if (status === "published" && !content.trim()) {
+      error = "Write some content before publishing.";
+      return;
+    }
 
     saving = true;
+    error = "";
+
+    if (!slugManuallyEdited) {
+      slug = nextSlug;
+    }
 
     const payload = {
-      title: title.trim(),
-      slug: slug.trim(),
+      title: nextTitle,
+      slug: nextSlug,
       excerpt: excerpt.trim() || null,
       content,
-      coverImage: null,
       tags: [...tags],
       status,
       visibility,
@@ -57,6 +75,7 @@
     try {
       const response = await fetch("/api/v1/posts", {
         method: "POST",
+        credentials: "same-origin",
         headers: {
           "Content-Type": "application/json",
         },
@@ -66,7 +85,7 @@
       const result = await response.json();
 
       if (!response.ok) {
-        console.error("Create post failed:", result);
+        error = apiErrorMessage(result, "Failed to create post");
         return;
       }
 
@@ -80,8 +99,9 @@
       }
 
       window.location.href = `/blog/${result.data.slug}`;
-    } catch (error) {
-      console.error("Create post request failed:", error);
+    } catch (err) {
+      console.error("Create post request failed:", err);
+      error = "Failed to create post";
     } finally {
       saving = false;
     }
@@ -113,6 +133,15 @@
       onPublishUnlisted={publishUnlisted}
       onPublishPublic={publishPublic}
     />
+
+    {#if error}
+      <Alert.Root
+        variant="destructive"
+        class="mt-6 border-red-400/10 bg-red-400/[0.03]"
+      >
+        <Alert.Description class="text-red-300/70">{error}</Alert.Description>
+      </Alert.Root>
+    {/if}
 
     <div class="mt-8">
       <EditorMeta

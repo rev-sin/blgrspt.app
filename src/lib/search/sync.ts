@@ -5,12 +5,14 @@ import { post, user } from "$lib/db/schema";
 
 import { getAlgoliaSearchClient, getAlgoliaWriteClient } from "./client";
 import { getPostsIndexName, getUsersIndexName, isAlgoliaConfigured } from "./config";
+import { highlightFromResult, type PostHighlight } from "./highlight";
 import {
   toPostSearchRecord,
   toUserSearchRecord,
   type PostSearchRecordInput,
   type UserSearchRecordInput,
 } from "./records";
+import { lookupSearchParams, postsIndexSettings, usersIndexSettings } from "./settings";
 
 const postIndexColumns = {
   id: post.id,
@@ -120,19 +122,33 @@ export async function searchIndexIds(options: {
   const result = await client.searchSingleIndex({
     indexName: options.indexName,
     searchParams: {
+      ...lookupSearchParams,
       query: options.query,
       page: options.page,
       hitsPerPage: options.hitsPerPage,
       filters: options.filters,
       numericFilters: options.numericFilters,
-      attributesToRetrieve: ["objectID"],
     },
   });
+
+  const highlights = new Map<string, PostHighlight>();
+
+  for (const hit of result.hits) {
+    const objectID = String(hit.objectID);
+    const highlight = highlightFromResult(
+      (hit._highlightResult as Parameters<typeof highlightFromResult>[0] | undefined) ?? {},
+    );
+
+    if (highlight) {
+      highlights.set(objectID, highlight);
+    }
+  }
 
   return {
     objectIDs: result.hits.map((hit) => String(hit.objectID)),
     total: result.nbHits ?? result.hits.length,
     totalPages: result.nbPages ?? 1,
+    highlights,
   };
 }
 
@@ -163,23 +179,12 @@ export async function reindexAllSearchRecords() {
   try {
     await client.setSettings({
       indexName: postsIndex,
-      indexSettings: {
-        searchableAttributes: ["title", "excerpt", "authorName", "authorEmail", "tags", "content"],
-        attributesForFaceting: [
-          "filterOnly(status)",
-          "filterOnly(visibility)",
-          "filterOnly(authorId)",
-          "filterOnly(tags)",
-        ],
-      },
+      indexSettings: postsIndexSettings,
     });
 
     await client.setSettings({
       indexName: usersIndex,
-      indexSettings: {
-        searchableAttributes: ["name", "email"],
-        attributesForFaceting: ["filterOnly(role)"],
-      },
+      indexSettings: usersIndexSettings,
     });
   } catch (error) {
     console.error("ALGOLIA INDEX SETTINGS ERROR:", error);

@@ -1,4 +1,9 @@
 <script lang="ts">
+  import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
+  import { Textarea } from "$lib/components/ui/textarea";
+
   interface Props {
     title?: string;
     slug?: string;
@@ -37,92 +42,70 @@
 </script>
 
 <section class="space-y-6">
-  <!-- Title -->
   <div>
-    <label
-      for="title"
-      class="mb-2 block font-[Oxanium] text-xs uppercase tracking-[0.18em] text-[#f7eee7]/40"
-    >
-      Title
-    </label>
+    <Label for="title" class="mb-2 text-[#f7eee7]/40">Title</Label>
 
-    <input
+    <Input
       id="title"
       bind:value={title}
       oninput={(event) => {
-        onTitleInput?.((event.currentTarget as HTMLInputElement).value);
+        onTitleInput?.(event.currentTarget.value);
       }}
       placeholder="Write your title..."
-      class="w-full border-0 border-b border-[#ffe1ca]/10 bg-transparent px-0 py-3 text-2xl font-medium text-[#f7eee7] outline-none placeholder:text-[#f7eee7]/20 focus:border-[#ffe1ca]/30"
+      class="w-full border-0 border-b border-[#ffe1ca]/10 bg-transparent px-0 py-3 text-2xl font-medium text-[#f7eee7] placeholder:text-[#f7eee7]/20"
     />
   </div>
 
-  <!-- Slug -->
   <div>
-    <label
-      for="slug"
-      class="mb-2 block font-[Oxanium] text-xs uppercase tracking-[0.18em] text-[#f7eee7]/40"
-    >
-      Slug
-    </label>
+    <Label for="slug" class="mb-2 text-[#f7eee7]/40">Slug</Label>
 
-    <input
+    <Input
       id="slug"
       bind:value={slug}
       oninput={(event) => {
-        onSlugInput?.((event.currentTarget as HTMLInputElement).value);
+        onSlugInput?.(event.currentTarget.value);
       }}
       placeholder="my-first-post"
-      class="w-full rounded-xl border border-[#ffe1ca]/10 bg-[#1b1411] px-4 py-3 text-sm text-[#f7eee7] outline-none placeholder:text-[#f7eee7]/20 focus:border-[#ffe1ca]/25"
+      class="h-auto w-full rounded-xl border border-[#ffe1ca]/10 bg-[#1b1411] px-4 py-3 text-sm text-[#f7eee7] placeholder:text-[#f7eee7]/20"
     />
   </div>
 
-  <!-- Excerpt -->
   <div>
-    <label
-      for="excerpt"
-      class="mb-2 block font-[Oxanium] text-xs uppercase tracking-[0.18em] text-[#f7eee7]/40"
-    >
-      Excerpt
-    </label>
+    <Label for="excerpt" class="mb-2 text-[#f7eee7]/40">Excerpt</Label>
 
-    <textarea
+    <Textarea
       id="excerpt"
       bind:value={excerpt}
-      maxlength="500"
-      rows="3"
+      maxlength={500}
+      rows={3}
       placeholder="A short description of your post..."
-      class="w-full resize-none rounded-xl border border-[#ffe1ca]/10 bg-[#1b1411] px-4 py-3 text-sm text-[#f7eee7] outline-none placeholder:text-[#f7eee7]/20 focus:border-[#ffe1ca]/25"
-    ></textarea>
+      class="min-h-24 w-full rounded-xl border border-[#ffe1ca]/10 bg-[#1b1411] px-4 py-3 text-sm text-[#f7eee7] placeholder:text-[#f7eee7]/20"
+    />
 
     <div class="mt-2 text-right text-[11px] text-[#f7eee7]/25">
       {excerpt.length}/500
     </div>
   </div>
 
-  <!-- Tags -->
   <div>
-    <label
-      for="tags"
-      class="mb-2 block font-[Oxanium] text-xs uppercase tracking-[0.18em] text-[#f7eee7]/40"
-    >
-      Tags
-    </label>
+    <Label for="tags" class="mb-2 text-[#f7eee7]/40">Tags</Label>
 
     <div
       class="flex flex-wrap gap-2 rounded-xl border border-[#ffe1ca]/10 bg-[#1b1411] p-3"
     >
       {#each tags as tag}
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="xs"
           onclick={() => removeTag(tag)}
-          class="rounded-lg bg-white/6 px-3 py-1.5 text-xs text-[#f7eee7]/70 transition hover:bg-white/10 hover:text-[#f7eee7]"
+          class="h-auto rounded-lg bg-white/6 px-3 py-1.5 text-xs font-normal tracking-normal text-[#f7eee7]/70 normal-case hover:bg-white/10 hover:text-[#f7eee7]"
         >
           {tag} ×
-        </button>
+        </Button>
       {/each}
 
-      <input
+      <Input
         id="tags"
         bind:value={tagInput}
         onkeydown={(event) => {
@@ -132,7 +115,7 @@
           }
         }}
         placeholder="Add tag..."
-        class="min-w-30 flex-1 bg-transparent text-sm text-[#f7eee7] outline-none placeholder:text-[#f7eee7]/20"
+        class="h-auto min-w-30 flex-1 border-0 bg-transparent px-0 py-1 text-sm text-[#f7eee7] placeholder:text-[#f7eee7]/20"
       />
     </div>
 
