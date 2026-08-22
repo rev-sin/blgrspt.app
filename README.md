@@ -549,7 +549,7 @@ Oxfmt + Prettier
 Production build
 ```
 
-Husky runs lint-staged on commit, Commitlint on the commit message, and the unit test suite on push. Use `just commit` for a conventional Commitizen prompt.
+Husky runs lint-staged (oxlint + format) on commit, Commitlint on the commit message, and oxlint plus the unit test suite on push. Use `just commit` for a conventional Commitizen prompt.
 
 All checks should pass before deployment.
 

@@ -68,7 +68,7 @@
   );
 
   $effect(() => {
-    search;
+    void search;
     activeIndex = 0;
   });
 

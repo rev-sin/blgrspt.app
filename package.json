@@ -102,6 +102,7 @@
       "oxfmt"
     ],
     "*.{svelte,astro}": [
+      "oxlint --fix",
       "prettier --write"
     ],
     "*.{json,md,css}": [
