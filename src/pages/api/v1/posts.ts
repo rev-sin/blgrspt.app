@@ -4,28 +4,37 @@ import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "$lib/db";
 import { post } from "$lib/db/schema";
 import { createPostSchema } from "$lib/validation/post";
+import { parsePostListQuery } from "$lib/validation/post-list";
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ url }) => {
   try {
-    const pageParam = Number(url.searchParams.get("page") ?? "1");
-    const limitParam = Number(url.searchParams.get("limit") ?? "10");
+    const parsed = parsePostListQuery(url.searchParams);
 
-    const page = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
+    if (!parsed.success) {
+      return new Response(JSON.stringify({ error: parsed.error }), {
+        status: 400,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    }
 
-    const limit = Number.isInteger(limitParam) && limitParam > 0 ? Math.min(limitParam, 100) : 10;
-
-    const offset = (page - 1) * limit;
-
-    const status = url.searchParams.get("status");
-    const tag = url.searchParams.get("tag");
-    const authorId = url.searchParams.get("authorId");
-    const createdAfter = url.searchParams.get("createdAfter");
-    const createdBefore = url.searchParams.get("createdBefore");
-
-    const sort = url.searchParams.get("sort") ?? "createdAt";
-    const order = url.searchParams.get("order") ?? "desc";
+    const {
+      page,
+      limit,
+      offset,
+      status,
+      tag,
+      authorId,
+      createdAfter,
+      createdBefore,
+      createdAfterDate,
+      createdBeforeDate,
+      sort,
+      order,
+    } = parsed.data;
 
     const conditions = [];
 
@@ -41,50 +50,12 @@ export const GET: APIRoute = async ({ url }) => {
       conditions.push(eq(post.authorId, authorId));
     }
 
-    if (createdAfter) {
-      const date = new Date(createdAfter);
-
-      if (Number.isNaN(date.getTime())) {
-        return new Response(
-          JSON.stringify({
-            error: {
-              code: "INVALID_REQUEST",
-              message: "Invalid createdAfter date",
-            },
-          }),
-          {
-            status: 400,
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-        );
-      }
-
-      conditions.push(gte(post.createdAt, date));
+    if (createdAfterDate) {
+      conditions.push(gte(post.createdAt, createdAfterDate));
     }
 
-    if (createdBefore) {
-      const date = new Date(createdBefore);
-
-      if (Number.isNaN(date.getTime())) {
-        return new Response(
-          JSON.stringify({
-            error: {
-              code: "INVALID_REQUEST",
-              message: "Invalid createdBefore date",
-            },
-          }),
-          {
-            status: 400,
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-        );
-      }
-
-      conditions.push(lte(post.createdAt, date));
+    if (createdBeforeDate) {
+      conditions.push(lte(post.createdAt, createdBeforeDate));
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -95,40 +66,6 @@ export const GET: APIRoute = async ({ url }) => {
       publishedAt: post.publishedAt,
       title: post.title,
     }[sort];
-
-    if (!sortColumn) {
-      return new Response(
-        JSON.stringify({
-          error: {
-            code: "INVALID_REQUEST",
-            message: "Invalid sort field. Allowed values: createdAt, updatedAt, publishedAt, title",
-          },
-        }),
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
-    }
-
-    if (order !== "asc" && order !== "desc") {
-      return new Response(
-        JSON.stringify({
-          error: {
-            code: "INVALID_REQUEST",
-            message: "Invalid order. Allowed values: asc, desc",
-          },
-        }),
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
-    }
 
     const orderBy = order === "asc" ? asc(sortColumn) : desc(sortColumn);
 

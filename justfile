@@ -54,6 +54,10 @@ fmt-check:
 knip:
     bun run knip
 
+[group('quality')]
+test:
+    bun run test
+
 [group('deps')]
 deps-check:
     bun run deps:check
@@ -103,12 +107,14 @@ validate:
     just check
     just lint
     just fmt-check
+    just test
 
 [group('quality')]
 ci:
     just check
     just lint
     just fmt-check
+    just test
     just build
 
 [group('turbo')]
@@ -126,3 +132,7 @@ turbo-lint:
 [group('turbo')]
 turbo-fmt:
     bun run turbo:fmt
+
+[group('turbo')]
+turbo-test:
+    bun run turbo:test
