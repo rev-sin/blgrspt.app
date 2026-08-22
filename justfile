@@ -1,62 +1,112 @@
 # Show available commands
 default:
     @just --list
-# Start the development server
-dev:
-    doppler run -- bun run dev
 
-# Install dependencies
+[group('setup')]
 install:
     bun install
 
-# Type-check Astro and TypeScript
-check:
-    doppler run -- bunx astro check
+[group('dev')]
+dev:
+    doppler run -- bun run dev
 
-# Run linter
+[group('dev')]
+preview:
+    doppler run -- bun run preview
+
+[group('quality')]
+check:
+    doppler run -- bun run check
+
+[group('quality')]
 lint:
     bun run lint
 
-# Fix lint issues
+[group('quality')]
 lint-fix:
     bun run lint:fix
 
-# Format the project
+[group('quality')]
 fmt:
     bun run fmt
 
-# Check formatting
+[group('quality')]
 fmt-check:
     bun run fmt:check
 
-# Test database connection
+[group('quality')]
+knip:
+    bun run knip
+
+[group('deps')]
+deps-check:
+    bun run deps:check
+
+[group('deps')]
+deps-update:
+    bun run deps:update
+
+[group('git')]
+commit:
+    bun run commit
+
+[group('db')]
 db-test:
-    doppler run -- bun scripts/test-db.ts
+    doppler run -- bun run db:test
 
-# Generate Drizzle migration
+[group('db')]
 db-generate:
-    doppler run -- bunx drizzle-kit generate
+    doppler run -- bun run db:generate
 
-# Apply Drizzle migrations
+[group('db')]
 db-migrate:
-    doppler run -- bunx drizzle-kit migrate
+    doppler run -- bun run db:migrate
 
-# Check Drizzle migrations
+[group('db')]
 db-check:
-    doppler run -- bunx drizzle-kit check
+    doppler run -- bun run db:check
 
-# Build the production application
+[group('db')]
+db-push:
+    doppler run -- bun run db:push
+
+[group('db')]
+db-studio:
+    doppler run -- bun run db:studio
+
+[group('db')]
+db-seed:
+    doppler run -- bun run db:seed
+
+[group('build')]
 build:
     doppler run -- bun run build
-# Run type checking, linting and formatting checks
+
+[group('quality')]
 validate:
     just check
     just lint
     just fmt-check
 
-# Run all checks including production build
+[group('quality')]
 ci:
     just check
     just lint
     just fmt-check
     just build
+
+[group('turbo')]
+turbo-build:
+    bun run turbo:build
+
+[group('turbo')]
+turbo-check:
+    bun run turbo:check
+
+[group('turbo')]
+turbo-lint:
+    bun run turbo:lint
+
+[group('turbo')]
+turbo-fmt:
+    bun run turbo:fmt

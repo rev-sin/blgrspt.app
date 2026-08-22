@@ -17,8 +17,11 @@ A modern, server-rendered blogging platform built with Astro, Svelte, Better Aut
 - **Deployment:** Vercel
 - **Runtime:** Node.js 24
 - **Package Manager:** Bun
+- **Task runner:** Just
 - **Linting:** Oxlint
-- **Formatting:** Oxfmt
+- **Formatting:** Oxfmt (JS/TS/JSON/CSS/Markdown) and Prettier (Svelte/Astro)
+- **Unused code:** Knip
+- **Commits:** Commitlint and Commitizen (`cz-git`)
 
 ## Architecture
 
@@ -55,6 +58,40 @@ A modern, server-rendered blogging platform built with Astro, Svelte, Better Aut
                  └──────────────┘
 ```
 
+## Commands
+
+[Just](https://github.com/casey/just) is the project task runner. Recipes wrap Bun scripts and inject secrets with Doppler where needed.
+
+List every recipe:
+
+```bash
+just
+```
+
+| Recipe                                                                         | What it does                                |
+| ------------------------------------------------------------------------------ | ------------------------------------------- |
+| `just install`                                                                 | Install dependencies with Bun               |
+| `just dev`                                                                     | Start the Astro dev server (Doppler)        |
+| `just check`                                                                   | Astro and Svelte type checks (Doppler)      |
+| `just lint` / `just lint-fix`                                                  | Oxlint                                      |
+| `just fmt` / `just fmt-check`                                                  | Oxfmt and Prettier                          |
+| `just knip`                                                                    | Unused files, exports, and dependencies     |
+| `just validate`                                                                | Typecheck, lint, and format check           |
+| `just ci`                                                                      | `validate` plus a production build          |
+| `just build`                                                                   | Production build (Doppler)                  |
+| `just db-test`                                                                 | Test the Neon connection                    |
+| `just db-generate`                                                             | Generate a Drizzle migration                |
+| `just db-migrate`                                                              | Apply Drizzle migrations                    |
+| `just db-check`                                                                | Verify Drizzle migrations                   |
+| `just db-push`                                                                 | Push the schema without a migration         |
+| `just db-studio`                                                               | Open Drizzle Studio                         |
+| `just db-seed`                                                                 | Seed the database (`src/lib/db/seed.ts`)    |
+| `just commit`                                                                  | Commitizen (`cz-git`)                       |
+| `just deps-check` / `just deps-update`                                         | Check or write dependency updates with Taze |
+| `just turbo-build` / `just turbo-check` / `just turbo-lint` / `just turbo-fmt` | Turbo-cached variants                       |
+
+Commands that need `DATABASE_URL` or auth secrets run through `doppler run`.
+
 ## Setup
 
 ### Prerequisites
@@ -63,6 +100,7 @@ Install the following:
 
 - [Bun](https://bun.sh/)
 - [Node.js 24](https://nodejs.org/)
+- [Just](https://github.com/casey/just)
 - [Doppler CLI](https://docs.doppler.com/docs/install-cli)
 - A [Neon](https://neon.tech/) PostgreSQL database
 - Google OAuth credentials
@@ -73,7 +111,7 @@ Install the following:
 Clone the repository and install dependencies:
 
 ```bash
-bun install
+just install
 ```
 
 ### 2. Configure Doppler
@@ -221,10 +259,10 @@ The application receives them through:
 doppler run -- <command>
 ```
 
-For example:
+Just recipes that need secrets already wrap that for you. For example:
 
 ```bash
-doppler run -- bun run dev
+just dev
 ```
 
 ### 8. Database schema
@@ -249,25 +287,25 @@ verification
 Generate a migration after modifying the schema:
 
 ```bash
-doppler run -- bunx drizzle-kit generate
+just db-generate
 ```
 
 Apply migrations to Neon:
 
 ```bash
-doppler run -- bunx drizzle-kit migrate
+just db-migrate
 ```
 
 Verify the migrations:
 
 ```bash
-doppler run -- bunx drizzle-kit check
+just db-check
 ```
 
 Test the database connection:
 
 ```bash
-doppler run -- bun scripts/test-db.ts
+just db-test
 ```
 
 ### 9. Run locally
@@ -275,7 +313,7 @@ doppler run -- bun scripts/test-db.ts
 Start the development server with Doppler injecting the secrets:
 
 ```bash
-doppler run -- bun run dev
+just dev
 ```
 
 The application will be available at:
@@ -286,40 +324,37 @@ http://localhost:4321
 
 ### 10. Validate the project
 
-Run Astro type checking:
+Type-check Astro and Svelte:
 
 ```bash
-doppler run -- bunx astro check
+just check
 ```
 
-Run linting:
+Lint:
 
 ```bash
-bun run lint
+just lint
 ```
 
 Check formatting:
 
 ```bash
-bun run fmt:check
+just fmt-check
 ```
 
 Run the production build:
 
 ```bash
-doppler run -- bun run build
-```
-
-Or use the Justfile:
-
-```bash
-just check
-just lint
-just fmt-check
 just build
 ```
 
-Run the complete validation:
+Run typecheck, lint, and format together:
+
+```bash
+just validate
+```
+
+Run the complete CI suite (includes the production build):
 
 ```bash
 just ci
@@ -368,13 +403,13 @@ The normal database workflow is:
 Modify schema
      │
      ▼
-drizzle-kit generate
+just db-generate
      │
      ▼
 Migration SQL
      │
      ▼
-drizzle-kit migrate
+just db-migrate
      │
      ▼
 Neon PostgreSQL
@@ -383,9 +418,9 @@ Neon PostgreSQL
 For example:
 
 ```bash
-doppler run -- bunx drizzle-kit generate
-doppler run -- bunx drizzle-kit migrate
-doppler run -- bunx drizzle-kit check
+just db-generate
+just db-migrate
+just db-check
 ```
 
 ## Development Workflow
@@ -394,7 +429,7 @@ doppler run -- bunx drizzle-kit check
 Clone repository
        │
        ▼
-   bun install
+   just install
        │
        ▼
    doppler setup
@@ -403,7 +438,7 @@ Clone repository
 Configure Neon + OAuth secrets
        │
        ▼
-doppler run -- bun run dev
+    just dev
        │
        ▼
    Develop
@@ -422,7 +457,7 @@ The application uses Astro SSR with the Vercel adapter.
 Build:
 
 ```bash
-doppler run -- bun run build
+just build
 ```
 
 Production secrets should be configured in the deployment environment.
@@ -453,19 +488,17 @@ just ci
 This runs:
 
 ```text
-Astro type checking
+Astro + Svelte type checking
         ↓
 Oxlint
         ↓
-Oxfmt
+Oxfmt + Prettier
         ↓
 Production build
 ```
 
+Husky runs lint-staged on commit and Commitlint on the commit message. Use `just commit` for a conventional Commitizen prompt.
+
 All checks should pass before deployment.
 
 **Doppler stores secrets → `doppler run` injects them → Astro/Better Auth/Drizzle use them → Drizzle connects to Neon.**
-
-```
-
-```
