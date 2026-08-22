@@ -8,6 +8,14 @@ export const auth = betterAuth({
     provider: "pg",
     schema,
   }),
+
+  baseURL: process.env.BETTER_AUTH_URL,
+
+  trustedOrigins: [
+    "http://localhost:4321",
+    process.env.BETTER_AUTH_URL!,
+  ],
+
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,

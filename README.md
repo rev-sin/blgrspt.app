@@ -1,8 +1,3 @@
-Yes. Add a **Setup** section after the Architecture section that explains the complete flow: Doppler → environment variables → Neon → Drizzle → Better Auth.
-
-I would structure it like this:
-
-````md
 # BlogPost
 
 A modern, server-rendered blogging platform built with Astro, Svelte, Better Auth, Drizzle ORM, and Neon PostgreSQL.
@@ -476,4 +471,3 @@ One important thing: **don't put your actual Neon connection string, OAuth secre
 Your README will then explain the complete chain clearly:
 
 **Doppler stores secrets → `doppler run` injects them → Astro/Better Auth/Drizzle use them → Drizzle connects to Neon.**
-```
