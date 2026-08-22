@@ -14,11 +14,6 @@ export const auth = betterAuth({
     protocol: process.env.NODE_ENV === "development" ? "http" : "https",
   },
 
-  trustedOrigins: [
-    "http://localhost:4321",
-    "https://blgrstapp.vercel.app",
-  ],
-
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
