@@ -47,7 +47,7 @@
     "tailwind-variants": "^3.3.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
-    "zod": "^3.25.76"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
