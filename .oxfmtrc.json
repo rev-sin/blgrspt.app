@@ -1,4 +1,12 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": ["dist", ".astro", ".vercel", "drizzle", "bun.lock"]
+  "ignorePatterns": [
+    "dist",
+    ".astro",
+    ".vercel",
+    "drizzle",
+    "bun.lock",
+    ".docusaurus",
+    "website/build"
+  ]
 }

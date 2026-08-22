@@ -1,0 +1,28 @@
+---
+sidebar_position: 5
+---
+
+# Architecture
+
+```text
+                         ┌──────────────────┐
+                         │     Browser      │
+                         └────────┬─────────┘
+                                  │
+                                  ▼
+                         ┌──────────────────┐
+                         │   Astro SSR      │
+                         │   Svelte UI      │
+                         └───────┬──────────┘
+                                 │
+                ┌────────────────┼────────────────┐
+                ▼                ▼                ▼
+        Better Auth        Astro API          Blog pages
+                └────────────────┬────────────────┘
+                                 ▼
+                           Drizzle ORM
+                                 ▼
+                          Neon PostgreSQL
+```
+
+This documentation site is a separate Bun workspace (`@blgrspt/docs` in `website/`). It does not share the Astro runtime.

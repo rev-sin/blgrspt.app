@@ -1,0 +1,41 @@
+---
+sidebar_position: 4
+---
+
+# Commands
+
+Just is the task runner. List recipes with `just`.
+
+## App
+
+| Recipe                        | Purpose                            |
+| ----------------------------- | ---------------------------------- |
+| `just install`                | Install workspace dependencies     |
+| `just dev`                    | Astro dev server (Doppler)         |
+| `just check`                  | Astro and Svelte type checks       |
+| `just lint` / `just lint-fix` | Oxlint                             |
+| `just fmt` / `just fmt-check` | Oxfmt and Prettier                 |
+| `just validate`               | Typecheck, lint, format            |
+| `just ci`                     | Validate plus production app build |
+| `just build`                  | Production app build (Doppler)     |
+
+## Docs
+
+| Recipe            | Purpose                                  |
+| ----------------- | ---------------------------------------- |
+| `just docs`       | Docusaurus dev server (`localhost:3000`) |
+| `just docs-build` | Static Docusaurus build                  |
+| `just docs-serve` | Serve the built docs                     |
+| `just docs-check` | Type-check the docs workspace            |
+
+## Database
+
+| Recipe             | Purpose                  |
+| ------------------ | ------------------------ |
+| `just db-test`     | Test the Neon connection |
+| `just db-generate` | Generate a migration     |
+| `just db-migrate`  | Apply migrations         |
+| `just db-check`    | Verify migrations        |
+| `just db-push`     | Push schema              |
+| `just db-studio`   | Drizzle Studio           |
+| `just db-seed`     | Seed the database        |

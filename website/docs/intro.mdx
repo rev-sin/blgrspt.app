@@ -1,0 +1,35 @@
+---
+sidebar_position: 1
+---
+
+# Introduction
+
+BlogPost is a server-rendered blogging platform.
+
+The application lives at the repository root (Astro + Svelte). This documentation site is a [Docusaurus](https://docusaurus.io/) workspace in `website/`.
+
+## Stack
+
+- **App:** Astro 7, Svelte 5, Tailwind CSS v4, shadcn-svelte
+- **Auth:** Better Auth with Google and GitHub OAuth
+- **Data:** Drizzle ORM and Neon PostgreSQL
+- **Secrets:** Doppler
+- **Deploy:** Vercel
+- **Tooling:** Bun, Just, Oxlint, Oxfmt, Prettier, Knip, Turbo
+
+## Run the docs locally
+
+From the repository root:
+
+```bash
+just docs
+```
+
+The site is available at [http://localhost:3000](http://localhost:3000).
+
+Build a static copy:
+
+```bash
+just docs-build
+just docs-serve
+```

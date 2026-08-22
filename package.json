@@ -1,6 +1,9 @@
 {
   "name": "blgrspt.app",
   "version": "0.0.1",
+  "workspaces": [
+    "website"
+  ],
   "type": "module",
   "scripts": {
     "dev": "astro dev",
@@ -27,7 +30,11 @@
     "turbo:build": "turbo run //#build",
     "turbo:check": "turbo run //#check",
     "turbo:lint": "turbo run //#lint",
-    "turbo:fmt": "turbo run //#fmt"
+    "turbo:fmt": "turbo run //#fmt",
+    "docs:dev": "bun --filter @blgrspt/docs start",
+    "docs:build": "bun --filter @blgrspt/docs build",
+    "docs:serve": "bun --filter @blgrspt/docs serve",
+    "docs:check": "bun --filter @blgrspt/docs typecheck"
   },
   "dependencies": {
     "@astrojs/svelte": "^9.0.1",
@@ -45,8 +52,6 @@
     "bits-ui": "^2.19.0",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.2",
-    "lucide-svelte": "^1.0.1",
-    "marked": "^18.0.10",
     "nanostores": "^0.11.4",
     "sharp": "^0.33.5",
     "svelte": "^5.56.10",
@@ -60,7 +65,6 @@
     "@astrojs/check": "^0.9.10",
     "@commitlint/cli": "^21.2.2",
     "@commitlint/config-conventional": "^21.2.2",
-    "@tailwindcss/typography": "^0.5.20",
     "@types/node": "^26.2.0",
     "commitizen": "^4.3.2",
     "cz-git": "^1.14.0",
@@ -107,7 +111,9 @@
     "install": false,
     "ignorePaths": [
       "**/node_modules/**",
-      "**/dist/**"
+      "**/dist/**",
+      "**/website/build/**",
+      "**/.docusaurus/**"
     ],
     "packageMode": {
       "typescript": "minor"

@@ -14,6 +14,22 @@ dev:
 preview:
     doppler run -- bun run preview
 
+[group('docs')]
+docs:
+    bun run docs:dev
+
+[group('docs')]
+docs-build:
+    bun run docs:build
+
+[group('docs')]
+docs-serve:
+    bun run docs:serve
+
+[group('docs')]
+docs-check:
+    bun run docs:check
+
 [group('quality')]
 check:
     doppler run -- bun run check

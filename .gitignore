@@ -1,5 +1,7 @@
 # build output
 dist/
+website/build/
+.docusaurus/
 # generated types
 .astro/
 

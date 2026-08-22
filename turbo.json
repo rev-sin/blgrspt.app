@@ -14,6 +14,16 @@
     },
     "//#fmt": {
       "inputs": ["$TURBO_DEFAULT$", ".oxfmtrc.json", ".prettierrc"]
+    },
+    "@blgrspt/docs#build": {
+      "outputs": ["build/**", ".docusaurus/**"]
+    },
+    "@blgrspt/docs#typecheck": {
+      "inputs": ["$TURBO_DEFAULT$"]
+    },
+    "@blgrspt/docs#start": {
+      "cache": false,
+      "persistent": true
     }
   }
 }

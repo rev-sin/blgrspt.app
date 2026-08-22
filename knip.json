@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignore": ["src/lib/components/ui/**"],
+  "ignore": ["src/lib/components/ui/**", "website/.docusaurus/**", "website/build/**"],
   "ignoreDependencies": ["tw-animate-css", "shadcn-svelte"],
   "ignoreExportsUsedInFile": true
 }

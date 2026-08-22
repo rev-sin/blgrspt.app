@@ -1,0 +1,20 @@
+---
+sidebar_position: 3
+---
+
+# Database
+
+The Drizzle schema is `src/lib/db/schema.ts`. Authentication tables are `user`, `session`, `account`, and `verification`.
+
+```bash
+just db-generate
+just db-migrate
+just db-check
+just db-test
+```
+
+Also available:
+
+- `just db-push` — push schema without a migration
+- `just db-studio` — Drizzle Studio
+- `just db-seed` — seed (`src/lib/db/seed.ts`)

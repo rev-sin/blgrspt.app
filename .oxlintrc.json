@@ -8,5 +8,5 @@
   "env": {
     "builtin": true
   },
-  "ignorePatterns": ["dist", ".astro", ".vercel", "drizzle"]
+  "ignorePatterns": ["dist", ".astro", ".vercel", "drizzle", ".docusaurus", "website/build"]
 }

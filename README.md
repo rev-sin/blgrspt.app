@@ -18,6 +18,7 @@ A modern, server-rendered blogging platform built with Astro, Svelte, Better Aut
 - **Runtime:** Node.js 24
 - **Package Manager:** Bun
 - **Task runner:** Just
+- **Docs:** Docusaurus (`website/`)
 - **Linting:** Oxlint
 - **Formatting:** Oxfmt (JS/TS/JSON/CSS/Markdown) and Prettier (Svelte/Astro)
 - **Unused code:** Knip
@@ -72,6 +73,8 @@ just
 | ------------------------------------------------------------------------------ | ------------------------------------------- |
 | `just install`                                                                 | Install dependencies with Bun               |
 | `just dev`                                                                     | Start the Astro dev server (Doppler)        |
+| `just docs`                                                                    | Start the Docusaurus docs site              |
+| `just docs-build` / `just docs-serve` / `just docs-check`                      | Build, serve, or type-check docs            |
 | `just check`                                                                   | Astro and Svelte type checks (Doppler)      |
 | `just lint` / `just lint-fix`                                                  | Oxlint                                      |
 | `just fmt` / `just fmt-check`                                                  | Oxfmt and Prettier                          |
@@ -322,7 +325,28 @@ The application will be available at:
 http://localhost:4321
 ```
 
-### 10. Validate the project
+### 10. Documentation site
+
+Project docs are a Docusaurus workspace in `website/` (`@blgrspt/docs`).
+
+```bash
+just docs
+```
+
+The docs site is available at:
+
+```text
+http://localhost:3000
+```
+
+Build and serve a static copy:
+
+```bash
+just docs-build
+just docs-serve
+```
+
+### 11. Validate the project
 
 Type-check Astro and Svelte:
 

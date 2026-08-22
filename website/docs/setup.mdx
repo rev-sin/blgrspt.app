@@ -1,0 +1,44 @@
+---
+sidebar_position: 2
+---
+
+# Setup
+
+Install Bun, Node.js 24, Just, and the Doppler CLI. You also need a Neon database and Google/GitHub OAuth credentials.
+
+## Install dependencies
+
+```bash
+just install
+```
+
+## Doppler
+
+```bash
+doppler login
+doppler setup
+```
+
+Use project `app` and config `dev`. Secrets are never committed; Just recipes that need them run through `doppler run`.
+
+Expected secrets:
+
+```text
+DATABASE_URL
+BETTER_AUTH_SECRET
+BETTER_AUTH_URL
+GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET
+GITHUB_CLIENT_ID
+GITHUB_CLIENT_SECRET
+```
+
+## Run the app
+
+```bash
+just dev
+```
+
+The app is available at [http://localhost:4321](http://localhost:4321).
+
+See the repository [README](https://github.com/rev-sin/blgrspt.app) for OAuth callback URLs and production notes.
