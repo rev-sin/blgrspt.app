@@ -1,17 +1,15 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
 
-  import {
-    Bold,
-    Italic,
-    Heading,
-    List,
-    ListOrdered,
-    Quote,
-    Code,
-    Link,
-    Image,
-  } from "lucide-svelte";
+  import Bold from "@lucide/svelte/icons/bold";
+  import Italic from "@lucide/svelte/icons/italic";
+  import Heading from "@lucide/svelte/icons/heading";
+  import List from "@lucide/svelte/icons/list";
+  import ListOrdered from "@lucide/svelte/icons/list-ordered";
+  import Quote from "@lucide/svelte/icons/quote";
+  import Code from "@lucide/svelte/icons/code";
+  import Link from "@lucide/svelte/icons/link";
+  import Image from "@lucide/svelte/icons/image";
 
   interface Props {
     onFormat: (type: string) => void;
