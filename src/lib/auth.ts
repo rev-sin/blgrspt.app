@@ -9,11 +9,14 @@ export const auth = betterAuth({
     schema,
   }),
 
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL: {
+    allowedHosts: ["localhost:4321", "blgrstapp.vercel.app"],
+    protocol: process.env.NODE_ENV === "development" ? "http" : "https",
+  },
 
   trustedOrigins: [
     "http://localhost:4321",
-    process.env.BETTER_AUTH_URL!,
+    "https://blgrstapp.vercel.app",
   ],
 
   socialProviders: {
