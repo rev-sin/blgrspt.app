@@ -1,5 +1,12 @@
 ---
+import { eq } from "drizzle-orm";
 import { marked } from "marked";
+
+import CopyLinkButton from "$lib/components/blog/CopyLinkButton.svelte";
+import { db } from "$lib/db";
+import { post as postTable, user as userTable } from "$lib/db/schema";
+import { canViewPost } from "$lib/posts/access";
+import { postWithAuthorColumns } from "$lib/posts/with-author";
 import "../../styles/global.css";
 
 export const prerender = false;
@@ -10,27 +17,29 @@ if (!slug) {
   return new Response("Post not found", { status: 404 });
 }
 
-const apiUrl = new URL(
-  `/api/v1/posts/${encodeURIComponent(slug)}`,
-  Astro.url.origin,
-);
+const [post] = await db
+  .select(postWithAuthorColumns)
+  .from(postTable)
+  .innerJoin(userTable, eq(postTable.authorId, userTable.id))
+  .where(eq(postTable.slug, slug))
+  .limit(1);
 
-const response = await fetch(apiUrl);
-
-if (!response.ok) {
-  return new Response("Post not found", { status: 404 });
-}
-
-const result = await response.json();
-const post = result.data;
-
-if (!post) {
+if (!post || !canViewPost(post, Astro.locals.user?.id)) {
   return new Response("Post not found", { status: 404 });
 }
 
 const isOwner = !!Astro.locals.user && Astro.locals.user.id === post.authorId;
 
 const renderedContent = await marked.parse(post.content);
+
+const visibilityLabel =
+  post.status === "draft"
+    ? "Draft"
+    : post.visibility === "private"
+      ? "Private"
+      : post.visibility === "unlisted"
+        ? "Unlisted"
+        : null;
 ---
 
 <html lang="en">
@@ -45,7 +54,7 @@ const renderedContent = await marked.parse(post.content);
       <article class="mx-auto w-full max-w-4xl px-6 py-16 md:py-24">
         <div class="mb-12 flex items-center justify-between">
           <a
-            href="/blog"
+            href="/feed"
             class="inline-flex items-center font-[Oxanium] text-xs
            uppercase tracking-[0.2em] text-[#f4ebe3]/40
            transition hover:text-[#f4ebe3]"
@@ -53,11 +62,14 @@ const renderedContent = await marked.parse(post.content);
             ← Back
           </a>
 
-          {
-            isOwner && (
-              <a
-                href={`/blog/edit/${post.slug}`}
-                class="rounded-xl border border-[#ffe1ca]/10
+          <div class="flex items-center gap-2">
+            <CopyLinkButton client:load slug={post.slug} />
+
+            {
+              isOwner && (
+                <a
+                  href={`/blog/edit/${post.slug}`}
+                  class="rounded-xl border border-[#ffe1ca]/10
                bg-[#1b1411] px-4 py-2
                font-[Oxanium] text-xs
                uppercase tracking-[0.15em]
@@ -66,11 +78,12 @@ const renderedContent = await marked.parse(post.content);
                hover:border-[#ffe1ca]/20
                hover:bg-[#221915]
                hover:text-[#f4ebe3]"
-              >
-                Edit
-              </a>
-            )
-          }
+                >
+                  Edit
+                </a>
+              )
+            }
+          </div>
         </div>
 
         <header class="mb-12">
@@ -122,10 +135,27 @@ const renderedContent = await marked.parse(post.content);
                    text-[#f4ebe3]/25"
           >
             {
+              visibilityLabel && (
+                <span class="rounded-full border border-[#ffe1ca]/15 px-2 py-1 text-[#d7a77e]/80">
+                  {visibilityLabel}
+                </span>
+              )
+            }
+
+            {
               post.publishedAt && (
                 <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
               )
             }
+
+            <span>·</span>
+
+            <a
+              href={`/u/${post.authorId}`}
+              class="transition hover:text-[#f4ebe3]"
+            >
+              {post.authorName}
+            </a>
 
             <span>·</span>
 

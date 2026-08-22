@@ -1,0 +1,51 @@
+---
+import { eq } from "drizzle-orm";
+
+import ProfilePage from "$lib/components/blog/ProfilePage.svelte";
+import { db } from "$lib/db";
+import { user } from "$lib/db/schema";
+import "../../styles/global.css";
+
+export const prerender = false;
+
+const { id } = Astro.params;
+
+if (!id) {
+  return new Response("User not found", { status: 404 });
+}
+
+const [profile] = await db
+  .select({
+    id: user.id,
+    name: user.name,
+    image: user.image,
+  })
+  .from(user)
+  .where(eq(user.id, id))
+  .limit(1);
+
+if (!profile) {
+  return new Response("User not found", { status: 404 });
+}
+
+const currentUser = Astro.locals.user
+  ? {
+      id: Astro.locals.user.id,
+      name: Astro.locals.user.name,
+      email: Astro.locals.user.email,
+      image: Astro.locals.user.image ?? null,
+    }
+  : null;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{profile.name}</title>
+  </head>
+
+  <body>
+    <ProfilePage client:load profile={profile} currentUser={currentUser} />
+  </body>
+</html>

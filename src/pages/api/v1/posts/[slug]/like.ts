@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { eq, sql } from "drizzle-orm";
 import { db } from "$lib/db";
 import { post, postLike } from "$lib/db/schema";
+import { isShareablePost } from "$lib/posts/access";
 
 export const prerender = false;
 
@@ -44,12 +45,16 @@ export const POST: APIRoute = async ({ locals, params }) => {
 
   try {
     const [existingPost] = await db
-      .select({ id: post.id })
+      .select({
+        id: post.id,
+        status: post.status,
+        visibility: post.visibility,
+      })
       .from(post)
       .where(eq(post.slug, slug))
       .limit(1);
 
-    if (!existingPost) {
+    if (!existingPost || !isShareablePost(existingPost)) {
       return new Response(
         JSON.stringify({
           error: {
@@ -171,12 +176,16 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
 
   try {
     const [existingPost] = await db
-      .select({ id: post.id })
+      .select({
+        id: post.id,
+        status: post.status,
+        visibility: post.visibility,
+      })
       .from(post)
       .where(eq(post.slug, slug))
       .limit(1);
 
-    if (!existingPost) {
+    if (!existingPost || !isShareablePost(existingPost)) {
       return new Response(
         JSON.stringify({
           error: {

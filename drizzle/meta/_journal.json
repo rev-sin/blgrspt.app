@@ -22,6 +22,13 @@
       "when": 1787401146283,
       "tag": "0002_happy_slapstick",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1787413400440,
+      "tag": "0003_wealthy_malcolm_colcord",
+      "breakpoints": true
     }
   ]
 }

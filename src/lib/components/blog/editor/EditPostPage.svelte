@@ -12,6 +12,7 @@
     coverImage: string | null;
     tags: string[];
     status: "draft" | "published";
+    visibility: "private" | "unlisted" | "public";
     contentType: string;
   }
 
@@ -46,7 +47,10 @@
     slug = generateSlug(value);
   }
 
-  async function updatePost() {
+  async function updatePost(
+    status: "draft" | "published",
+    visibility: "private" | "unlisted" | "public",
+  ) {
     if (saving) return;
 
     saving = true;
@@ -58,7 +62,8 @@
       content,
       coverImage: post.coverImage,
       tags: [...tags],
-      status: post.status,
+      status,
+      visibility,
     };
 
     try {
@@ -80,6 +85,15 @@
         return;
       }
 
+      if (
+        status === "draft" ||
+        visibility === "private" ||
+        visibility === "unlisted"
+      ) {
+        window.location.href = "/dashboard";
+        return;
+      }
+
       window.location.href = `/blog/${result.data.slug}`;
     } catch (error) {
       console.error("Update request failed:", error);
@@ -87,11 +101,33 @@
       saving = false;
     }
   }
+
+  function saveDraft() {
+    return updatePost("draft", "private");
+  }
+
+  function publishPrivate() {
+    return updatePost("published", "private");
+  }
+
+  function publishUnlisted() {
+    return updatePost("published", "unlisted");
+  }
+
+  function publishPublic() {
+    return updatePost("published", "public");
+  }
 </script>
 
 <div class="min-h-screen w-full bg-[#15100e] text-[#f4ebe3]">
   <div class="mx-auto w-full max-w-7xl px-6 py-6">
-    <EditorHeader onSave={updatePost} onPublish={updatePost} />
+    <EditorHeader
+      {saving}
+      onSave={saveDraft}
+      onPublishPrivate={publishPrivate}
+      onPublishUnlisted={publishUnlisted}
+      onPublishPublic={publishPublic}
+    />
 
     <div class="mt-8">
       <EditorMeta

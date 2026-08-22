@@ -98,7 +98,7 @@
       "prettier --write"
     ],
     "*.{json,md,css}": [
-      "oxfmt"
+      "oxfmt --no-error-on-unmatched-pattern"
     ]
   },
   "config": {

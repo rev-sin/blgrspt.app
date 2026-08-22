@@ -22,6 +22,8 @@ export const createPostSchema = z.object({
 
   status: z.enum(["draft", "published"]).default("draft"),
 
+  visibility: z.enum(["private", "unlisted", "public"]).default("private"),
+
   contentType: z.enum(["markdown", "text", "tex"]).default("markdown"),
 });
 

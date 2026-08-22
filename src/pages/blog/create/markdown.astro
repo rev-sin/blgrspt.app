@@ -2,6 +2,10 @@
 import MarkdownPostPage from "$lib/components/blog/editor/MarkdownPostPage.svelte";
 
 import "../../../styles/global.css";
+
+if (!Astro.locals.user) {
+  return Astro.redirect("/");
+}
 ---
 
 <html lang="en">

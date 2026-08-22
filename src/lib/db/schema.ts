@@ -133,6 +133,8 @@ export const post = pgTable(
 
     status: text("status").notNull().default("draft"),
 
+    visibility: text("visibility").notNull().default("private"),
+
     publishedAt: timestamp("published_at"),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -149,6 +151,8 @@ export const post = pgTable(
     index("post_author_id_idx").on(table.authorId),
 
     index("post_status_idx").on(table.status),
+
+    index("post_visibility_idx").on(table.visibility),
   ],
 );
 
