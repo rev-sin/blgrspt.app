@@ -13,6 +13,14 @@ export const user = pgTable("user", {
 
   image: text("image"),
 
+  role: text("role").default("user").notNull(),
+
+  banned: boolean("banned").default(false).notNull(),
+
+  banReason: text("ban_reason"),
+
+  banExpires: timestamp("ban_expires"),
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
 
   updatedAt: timestamp("updated_at")
@@ -43,6 +51,8 @@ export const session = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+
+    impersonatedBy: text("impersonated_by"),
   },
   (table) => [index("session_userId_idx").on(table.userId)],
 );

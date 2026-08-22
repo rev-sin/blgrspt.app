@@ -20,8 +20,28 @@ export function isShareablePost(post: Pick<PostAccessFields, "status" | "visibil
   );
 }
 
-export function canViewPost(post: PostAccessFields, userId: string | null | undefined): boolean {
+export function canViewPost(
+  post: PostAccessFields,
+  userId: string | null | undefined,
+  isAdmin = false,
+): boolean {
+  if (isAdmin) {
+    return true;
+  }
+
   if (isShareablePost(post)) {
+    return true;
+  }
+
+  return Boolean(userId && post.authorId === userId);
+}
+
+export function canManagePost(
+  post: Pick<PostAccessFields, "authorId">,
+  userId: string | null | undefined,
+  isAdmin = false,
+): boolean {
+  if (isAdmin) {
     return true;
   }
 

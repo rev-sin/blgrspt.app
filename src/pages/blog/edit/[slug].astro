@@ -2,9 +2,10 @@
 import { eq } from "drizzle-orm";
 
 import EditPostPage from "$lib/components/blog/editor/EditPostPage.svelte";
+import { isAdminUser } from "$lib/auth/rbac";
 import { db } from "$lib/db";
 import { post as postTable } from "$lib/db/schema";
-import { canViewPost } from "$lib/posts/access";
+import { canManagePost, canViewPost } from "$lib/posts/access";
 import "../../../styles/global.css";
 
 export const prerender = false;
@@ -19,17 +20,19 @@ if (!Astro.locals.user) {
   return Astro.redirect("/feed");
 }
 
+const isAdmin = isAdminUser(Astro.locals.user);
+
 const [post] = await db
   .select()
   .from(postTable)
   .where(eq(postTable.slug, slug))
   .limit(1);
 
-if (!post || !canViewPost(post, Astro.locals.user.id)) {
+if (!post || !canViewPost(post, Astro.locals.user.id, isAdmin)) {
   return Astro.redirect("/dashboard");
 }
 
-if (post.authorId !== Astro.locals.user.id) {
+if (!canManagePost(post, Astro.locals.user.id, isAdmin)) {
   return Astro.redirect(`/blog/${post.slug}`);
 }
 
@@ -45,6 +48,9 @@ const editorPost = {
   visibility: post.visibility as "private" | "unlisted" | "public",
   contentType: post.contentType,
 };
+
+const backHref =
+  isAdmin && post.authorId !== Astro.locals.user.id ? "/admin" : "/dashboard";
 ---
 
 <html lang="en">
@@ -55,6 +61,6 @@ const editorPost = {
   </head>
 
   <body class="bg-[#15100e]">
-    <EditPostPage client:load post={editorPost} />
+    <EditPostPage client:load post={editorPost} backHref={backHref} />
   </body>
 </html>

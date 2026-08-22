@@ -39,9 +39,10 @@
   interface Props {
     profile: Profile;
     currentUser: CurrentUser | null;
+    isAdmin?: boolean;
   }
 
-  let { profile, currentUser }: Props = $props();
+  let { profile, currentUser, isAdmin = false }: Props = $props();
 
   let posts = $state<Post[]>([]);
   let loading = $state(true);
@@ -79,7 +80,7 @@
 
 <div class="min-h-screen w-full bg-[#15100e] text-[#f4ebe3]">
   {#if currentUser}
-    <BlogHeader user={currentUser} />
+    <BlogHeader user={currentUser} {isAdmin} />
   {:else}
     <header class="px-6 pt-6">
       <nav
@@ -117,6 +118,15 @@
         >
           {profile.name}
         </h1>
+
+        {#if isAdmin && currentUser?.id === profile.id}
+          <a
+            href="/admin"
+            class="mt-4 inline-flex rounded-xl border border-[#ffe1ca]/10 bg-[#1b1411] px-4 py-2 font-[Oxanium] text-xs uppercase tracking-[0.15em] text-[#d7a77e] transition hover:border-[#ffe1ca]/20 hover:text-[#f4ebe3]"
+          >
+            Admin dashboard
+          </a>
+        {/if}
       </div>
     </section>
 

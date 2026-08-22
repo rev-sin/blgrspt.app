@@ -98,6 +98,14 @@ db-studio:
 db-seed:
     doppler run -- bun run db:seed
 
+[group('search')]
+search-reindex:
+    doppler run -- bun run search:reindex
+
+[group('deploy')]
+vercel-sync-secrets:
+    bun run vercel:sync-secrets
+
 [group('build')]
 build:
     doppler run -- bun run build

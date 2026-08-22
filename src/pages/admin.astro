@@ -1,7 +1,7 @@
 ---
-import "../styles/global.css";
-import BlogPage from "$lib/components/blog/BlogPage.svelte";
 import { isAdminUser } from "$lib/auth/rbac";
+import AdminPage from "$lib/components/blog/AdminPage.svelte";
+import "../styles/global.css";
 
 export const prerender = false;
 
@@ -9,18 +9,21 @@ if (!Astro.locals.user) {
   return Astro.redirect("/");
 }
 
+if (!isAdminUser(Astro.locals.user)) {
+  return Astro.redirect(`/u/${Astro.locals.user.id}`);
+}
+
 const user = Astro.locals.user;
-const isAdmin = isAdminUser(user);
 ---
 
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>Dashboard</title>
+    <title>Admin</title>
   </head>
 
   <body>
-    <BlogPage client:load user={user} isAdmin={isAdmin} />
+    <AdminPage client:load user={user} />
   </body>
 </html>

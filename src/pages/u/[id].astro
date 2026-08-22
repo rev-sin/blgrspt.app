@@ -2,6 +2,7 @@
 import { eq } from "drizzle-orm";
 
 import ProfilePage from "$lib/components/blog/ProfilePage.svelte";
+import { isAdminUser } from "$lib/auth/rbac";
 import { db } from "$lib/db";
 import { user } from "$lib/db/schema";
 import "../../styles/global.css";
@@ -36,6 +37,8 @@ const currentUser = Astro.locals.user
       image: Astro.locals.user.image ?? null,
     }
   : null;
+
+const isAdmin = isAdminUser(Astro.locals.user);
 ---
 
 <html lang="en">
@@ -46,6 +49,11 @@ const currentUser = Astro.locals.user
   </head>
 
   <body>
-    <ProfilePage client:load profile={profile} currentUser={currentUser} />
+    <ProfilePage
+      client:load
+      profile={profile}
+      currentUser={currentUser}
+      isAdmin={isAdmin}
+    />
   </body>
 </html>

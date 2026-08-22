@@ -1,10 +1,14 @@
 import type { APIRoute } from "astro";
-import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, ilike, inArray, lte, or, sql } from "drizzle-orm";
 
+import { isAdminUser } from "$lib/auth/rbac";
 import { db } from "$lib/db";
 import { post, user } from "$lib/db/schema";
 import { isRestrictedListQuery } from "$lib/posts/access";
 import { postWithAuthorColumns } from "$lib/posts/with-author";
+import { buildPostNumericFilters, buildPostSearchFilters } from "$lib/search/filters";
+import { getPostsIndexName, isAlgoliaConfigured } from "$lib/search/config";
+import { indexPostById, searchIndexIds } from "$lib/search/sync";
 import { createPostSchema } from "$lib/validation/post";
 import { parsePostListQuery } from "$lib/validation/post-list";
 
@@ -32,6 +36,8 @@ export const GET: APIRoute = async ({ url, locals }) => {
       tag,
       authorId,
       mine,
+      scope,
+      q,
       createdAfter,
       createdBefore,
       createdAfterDate,
@@ -40,9 +46,11 @@ export const GET: APIRoute = async ({ url, locals }) => {
       order,
     } = parsed.data;
 
-    const listingOwn = mine || isRestrictedListQuery(status, visibility);
+    const adminScope = scope === "admin";
+    const viewerIsAdmin = isAdminUser(locals.user);
+    const listingOwn = mine || (isRestrictedListQuery(status, visibility) && !adminScope);
 
-    if (listingOwn && !locals.user) {
+    if ((listingOwn || adminScope) && !locals.user) {
       return new Response(
         JSON.stringify({
           error: {
@@ -59,12 +67,31 @@ export const GET: APIRoute = async ({ url, locals }) => {
       );
     }
 
+    if (adminScope && !viewerIsAdmin) {
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "FORBIDDEN",
+            message: "Admin access required",
+          },
+        }),
+        {
+          status: 403,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    }
+
     const conditions = [];
 
-    if (listingOwn && locals.user) {
-      conditions.push(eq(post.authorId, locals.user.id));
-    } else {
-      conditions.push(and(eq(post.status, "published"), eq(post.visibility, "public")));
+    if (!adminScope) {
+      if (listingOwn && locals.user) {
+        conditions.push(eq(post.authorId, locals.user.id));
+      } else {
+        conditions.push(and(eq(post.status, "published"), eq(post.visibility, "public")));
+      }
     }
 
     if (status) {
@@ -83,6 +110,14 @@ export const GET: APIRoute = async ({ url, locals }) => {
       conditions.push(eq(post.authorId, authorId));
     }
 
+    if (q) {
+      const pattern = `%${q}%`;
+
+      conditions.push(
+        or(ilike(post.title, pattern), ilike(user.name, pattern), ilike(user.email, pattern)),
+      );
+    }
+
     if (createdAfterDate) {
       conditions.push(gte(post.createdAt, createdAfterDate));
     }
@@ -92,6 +127,79 @@ export const GET: APIRoute = async ({ url, locals }) => {
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    if (q && isAlgoliaConfigured()) {
+      try {
+        const algolia = await searchIndexIds({
+          indexName: getPostsIndexName(),
+          query: q,
+          page: page - 1,
+          hitsPerPage: limit,
+          filters: buildPostSearchFilters({
+            adminScope,
+            listingOwn,
+            userId: locals.user?.id,
+            status,
+            visibility,
+            tag,
+            authorId,
+          }),
+          numericFilters: buildPostNumericFilters(createdAfterDate, createdBeforeDate),
+        });
+
+        if (algolia) {
+          const rankedPosts =
+            algolia.objectIDs.length > 0
+              ? await db
+                  .select(postWithAuthorColumns)
+                  .from(post)
+                  .innerJoin(user, eq(post.authorId, user.id))
+                  .where(inArray(post.id, algolia.objectIDs))
+              : [];
+
+          const postsById = new Map(rankedPosts.map((item) => [item.id, item]));
+          const posts = algolia.objectIDs.flatMap((id) => {
+            const item = postsById.get(id);
+            return item ? [item] : [];
+          });
+
+          return new Response(
+            JSON.stringify({
+              data: posts,
+              pagination: {
+                page,
+                limit,
+                total: algolia.total,
+                totalPages: algolia.totalPages,
+              },
+              filters: {
+                status,
+                visibility,
+                tag,
+                authorId,
+                mine,
+                scope,
+                q,
+                createdAfter,
+                createdBefore,
+              },
+              sorting: {
+                sort,
+                order,
+              },
+            }),
+            {
+              status: 200,
+              headers: {
+                "Content-Type": "application/json",
+              },
+            },
+          );
+        }
+      } catch (error) {
+        console.error("ALGOLIA POST SEARCH ERROR:", error);
+      }
+    }
 
     const sortColumn = {
       createdAt: post.createdAt,
@@ -111,12 +219,15 @@ export const GET: APIRoute = async ({ url, locals }) => {
       .limit(limit)
       .offset(offset);
 
-    const [{ count }] = await db
+    const countQuery = db
       .select({
         count: sql<number>`count(*)`,
       })
-      .from(post)
-      .where(whereClause);
+      .from(post);
+
+    const [{ count }] = q
+      ? await countQuery.innerJoin(user, eq(post.authorId, user.id)).where(whereClause)
+      : await countQuery.where(whereClause);
 
     const total = Number(count);
     const totalPages = Math.ceil(total / limit);
@@ -136,6 +247,8 @@ export const GET: APIRoute = async ({ url, locals }) => {
           tag,
           authorId,
           mine,
+          scope,
+          q,
           createdAfter,
           createdBefore,
         },
@@ -246,6 +359,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
         publishedAt,
       })
       .returning();
+
+    await indexPostById(createdPost.id);
 
     return new Response(
       JSON.stringify({
