@@ -53,7 +53,11 @@
           onclick={() => signIn("github")}
           disabled={loading}
         >
-          <img src="/github_white.svg" alt="GitHub" class="size-5.25 object-contain" />
+          <img
+            src="/github_white.svg"
+            alt="GitHub"
+            class="size-5.25 object-contain"
+          />
           <span>Continue with GitHub</span>
         </Button>
 
@@ -63,7 +67,11 @@
           onclick={() => signIn("google")}
           disabled={loading}
         >
-          <img src="/google-color.svg" alt="Google" class="size-5.25 object-contain" />
+          <img
+            src="/google-color.svg"
+            alt="Google"
+            class="size-5.25 object-contain"
+          />
           <span>Continue with Google</span>
         </Button>
       </Card.Content>

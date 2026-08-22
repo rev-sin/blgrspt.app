@@ -53,7 +53,7 @@ A modern, server-rendered blogging platform built with Astro, Svelte, Better Aut
                  │ Neon         │
                  │ PostgreSQL   │
                  └──────────────┘
-````
+```
 
 ## Setup
 
@@ -61,12 +61,12 @@ A modern, server-rendered blogging platform built with Astro, Svelte, Better Aut
 
 Install the following:
 
-* [Bun](https://bun.sh/)
-* [Node.js 24](https://nodejs.org/)
-* [Doppler CLI](https://docs.doppler.com/docs/install-cli)
-* A [Neon](https://neon.tech/) PostgreSQL database
-* Google OAuth credentials
-* GitHub OAuth credentials
+- [Bun](https://bun.sh/)
+- [Node.js 24](https://nodejs.org/)
+- [Doppler CLI](https://docs.doppler.com/docs/install-cli)
+- A [Neon](https://neon.tech/) PostgreSQL database
+- Google OAuth credentials
+- GitHub OAuth credentials
 
 ### 1. Install dependencies
 
@@ -464,6 +464,8 @@ Production build
 
 All checks should pass before deployment.
 
-
 **Doppler stores secrets → `doppler run` injects them → Astro/Better Auth/Drizzle use them → Drizzle connects to Neon.**
+
+```
+
 ```

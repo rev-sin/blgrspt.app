@@ -44,14 +44,9 @@
 
       <div class="flex items-center gap-3">
         <Avatar.Root class="size-10 border border-[#ffe1ca]/15">
-          <Avatar.Image
-            src={user.image ?? undefined}
-            alt={user.name}
-          />
+          <Avatar.Image src={user.image ?? undefined} alt={user.name} />
 
-          <Avatar.Fallback
-            class="bg-[#6e452d] text-sm text-[#f7eee7]"
-          >
+          <Avatar.Fallback class="bg-[#6e452d] text-sm text-[#f7eee7]">
             {user.name.slice(0, 1).toUpperCase()}
           </Avatar.Fallback>
         </Avatar.Root>
@@ -85,9 +80,7 @@
         {user.name}
       </h1>
 
-      <p class="mt-4 text-sm text-[#f7eee7]/45">
-        Your blog starts here.
-      </p>
+      <p class="mt-4 text-sm text-[#f7eee7]/45">Your blog starts here.</p>
     </section>
   </main>
 </div>
