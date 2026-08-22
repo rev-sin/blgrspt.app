@@ -1,0 +1,50 @@
+---
+import EditPostPage from "$lib/components/blog/editor/EditPostPage.svelte";
+import "../../../styles/global.css";
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return new Response("Post not found", { status: 404 });
+}
+
+if (!Astro.locals.user) {
+  return Astro.redirect("/blog");
+}
+
+const apiUrl = new URL(
+  `/api/v1/posts/${encodeURIComponent(slug)}`,
+  Astro.url.origin,
+);
+
+const response = await fetch(apiUrl);
+
+if (!response.ok) {
+  return Astro.redirect("/blog");
+}
+
+const result = await response.json();
+const post = result.data;
+
+if (!post) {
+  return Astro.redirect("/blog");
+}
+
+if (post.authorId !== Astro.locals.user.id) {
+  return Astro.redirect(`/blog/${post.slug}`);
+}
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Edit {post.title}</title>
+  </head>
+
+  <body class="bg-[#15100e]">
+    <EditPostPage post={post} />
+  </body>
+</html>
