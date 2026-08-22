@@ -1,0 +1,22 @@
+---
+import "../../styles/global.css";
+import BlogPage from "$lib/components/blog/BlogPage.svelte";
+
+if (!Astro.locals.user) {
+  return Astro.redirect("/");
+}
+
+const user = Astro.locals.user;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>BlogPost</title>
+  </head>
+
+  <body>
+    <BlogPage client:load user={user} />
+  </body>
+</html>
