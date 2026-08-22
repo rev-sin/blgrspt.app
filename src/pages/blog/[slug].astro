@@ -3,9 +3,10 @@ import { eq } from "drizzle-orm";
 import { marked } from "marked";
 
 import CopyLinkButton from "$lib/components/blog/CopyLinkButton.svelte";
+import { isAdminUser } from "$lib/auth/rbac";
 import { db } from "$lib/db";
 import { post as postTable, user as userTable } from "$lib/db/schema";
-import { canViewPost } from "$lib/posts/access";
+import { canManagePost, canViewPost } from "$lib/posts/access";
 import { postWithAuthorColumns } from "$lib/posts/with-author";
 import "../../styles/global.css";
 
@@ -24,11 +25,13 @@ const [post] = await db
   .where(eq(postTable.slug, slug))
   .limit(1);
 
-if (!post || !canViewPost(post, Astro.locals.user?.id)) {
+const isAdmin = isAdminUser(Astro.locals.user);
+
+if (!post || !canViewPost(post, Astro.locals.user?.id, isAdmin)) {
   return new Response("Post not found", { status: 404 });
 }
 
-const isOwner = !!Astro.locals.user && Astro.locals.user.id === post.authorId;
+const canEdit = canManagePost(post, Astro.locals.user?.id, isAdmin);
 
 const renderedContent = await marked.parse(post.content);
 
@@ -66,7 +69,7 @@ const visibilityLabel =
             <CopyLinkButton client:load slug={post.slug} />
 
             {
-              isOwner && (
+              canEdit && (
                 <a
                   href={`/blog/edit/${post.slug}`}
                   class="rounded-xl border border-[#ffe1ca]/10

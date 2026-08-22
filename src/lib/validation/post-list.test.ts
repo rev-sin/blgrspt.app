@@ -21,6 +21,8 @@ describe("parsePostListQuery", () => {
       tag: null,
       authorId: null,
       mine: false,
+      scope: null,
+      q: null,
       createdAfter: null,
       createdBefore: null,
       createdAfterDate: undefined,
@@ -61,6 +63,8 @@ describe("parsePostListQuery", () => {
     expect(result.data.tag).toBe("astro");
     expect(result.data.authorId).toBe("user-1");
     expect(result.data.mine).toBe(true);
+    expect(result.data.scope).toBe(null);
+    expect(result.data.q).toBe(null);
     expect(result.data.sort).toBe("title");
     expect(result.data.order).toBe("asc");
     expect(result.data.createdAfterDate?.toISOString()).toBe("2026-01-01T00:00:00.000Z");
@@ -166,6 +170,34 @@ describe("parsePostListQuery", () => {
       error: {
         code: "INVALID_REQUEST",
         message: "Invalid order. Allowed values: asc, desc",
+      },
+    });
+  });
+
+  test("parses admin scope and search query", () => {
+    const result = parsePostListQuery(
+      new URLSearchParams({
+        scope: "admin",
+        q: "  hello  ",
+      }),
+    );
+
+    expect(result.success).toBe(true);
+
+    if (result.success) {
+      expect(result.data.scope).toBe("admin");
+      expect(result.data.q).toBe("hello");
+    }
+  });
+
+  test("rejects an invalid scope", () => {
+    const result = parsePostListQuery(new URLSearchParams({ scope: "moderator" }));
+
+    expect(result).toEqual({
+      success: false,
+      error: {
+        code: "INVALID_REQUEST",
+        message: "Invalid scope. Allowed values: admin",
       },
     });
   });

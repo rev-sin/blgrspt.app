@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import FeedPage from "$lib/components/blog/FeedPage.svelte";
+import { isAdminUser } from "$lib/auth/rbac";
 
 export const prerender = false;
 
@@ -9,6 +10,7 @@ if (!Astro.locals.user) {
 }
 
 const user = Astro.locals.user;
+const isAdmin = isAdminUser(user);
 ---
 
 <html lang="en">
@@ -19,6 +21,6 @@ const user = Astro.locals.user;
   </head>
 
   <body>
-    <FeedPage client:load user={user} />
+    <FeedPage client:load user={user} isAdmin={isAdmin} />
   </body>
 </html>

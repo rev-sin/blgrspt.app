@@ -16,6 +16,8 @@ export type PostListQuery = {
   tag: string | null;
   authorId: string | null;
   mine: boolean;
+  scope: "admin" | null;
+  q: string | null;
   createdAfter: string | null;
   createdBefore: string | null;
   createdAfterDate: Date | undefined;
@@ -54,6 +56,8 @@ export function parsePostListQuery(searchParams: URLSearchParams): ParsePostList
   const tag = searchParams.get("tag");
   const authorId = searchParams.get("authorId");
   const mine = searchParams.get("mine") === "true";
+  const scopeParam = searchParams.get("scope");
+  const qParam = searchParams.get("q");
   const createdAfter = searchParams.get("createdAfter");
   const createdBefore = searchParams.get("createdBefore");
 
@@ -136,6 +140,28 @@ export function parsePostListQuery(searchParams: URLSearchParams): ParsePostList
     };
   }
 
+  if (scopeParam && scopeParam !== "admin") {
+    return {
+      success: false,
+      error: {
+        code: "INVALID_REQUEST",
+        message: "Invalid scope. Allowed values: admin",
+      },
+    };
+  }
+
+  const q = qParam?.trim() || null;
+
+  if (q && q.length > 200) {
+    return {
+      success: false,
+      error: {
+        code: "INVALID_REQUEST",
+        message: "Search query must be 200 characters or fewer",
+      },
+    };
+  }
+
   return {
     success: true,
     data: {
@@ -147,6 +173,8 @@ export function parsePostListQuery(searchParams: URLSearchParams): ParsePostList
       tag,
       authorId,
       mine,
+      scope: scopeParam === "admin" ? "admin" : null,
+      q,
       createdAfter,
       createdBefore,
       createdAfterDate,

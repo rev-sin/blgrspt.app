@@ -18,9 +18,10 @@
 
   interface Props {
     post: Post;
+    backHref?: string;
   }
 
-  let { post }: Props = $props();
+  let { post, backHref = "/dashboard" }: Props = $props();
 
   let title = $state(post.title);
   let slug = $state(post.slug);
@@ -90,7 +91,7 @@
         visibility === "private" ||
         visibility === "unlisted"
       ) {
-        window.location.href = "/dashboard";
+        window.location.href = backHref;
         return;
       }
 
@@ -123,6 +124,7 @@
   <div class="mx-auto w-full max-w-7xl px-6 py-6">
     <EditorHeader
       {saving}
+      {backHref}
       onSave={saveDraft}
       onPublishPrivate={publishPrivate}
       onPublishUnlisted={publishUnlisted}

@@ -1,9 +1,11 @@
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
+import { isAdminUser } from "$lib/auth/rbac";
 import { db } from "$lib/db";
 import { post, user } from "$lib/db/schema";
-import { canViewPost } from "$lib/posts/access";
+import { canManagePost, canViewPost } from "$lib/posts/access";
 import { postWithAuthorColumns } from "$lib/posts/with-author";
+import { indexPostById, removePostFromIndex } from "$lib/search/sync";
 import { updatePostSchema } from "$lib/validation/post";
 
 export const prerender = false;
@@ -52,7 +54,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       );
     }
 
-    if (!canViewPost(existingPost, locals.user?.id)) {
+    if (!canViewPost(existingPost, locals.user?.id, isAdminUser(locals.user))) {
       return new Response(
         JSON.stringify({
           error: {
@@ -157,12 +159,12 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
       );
     }
 
-    if (existingPost.authorId !== locals.user.id) {
+    if (!canManagePost(existingPost, locals.user.id, isAdminUser(locals.user))) {
       return new Response(
         JSON.stringify({
           error: {
             code: "FORBIDDEN",
-            message: "You are not the author of this post",
+            message: "You are not allowed to update this post",
           },
         }),
         {
@@ -247,6 +249,8 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
       })
       .where(eq(post.id, existingPost.id))
       .returning();
+
+    await indexPostById(updatedPost.id);
 
     return new Response(
       JSON.stringify({
@@ -356,12 +360,12 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       );
     }
 
-    if (existingPost.authorId !== locals.user.id) {
+    if (!canManagePost(existingPost, locals.user.id, isAdminUser(locals.user))) {
       return new Response(
         JSON.stringify({
           error: {
             code: "FORBIDDEN",
-            message: "You are not the author of this post",
+            message: "You are not allowed to delete this post",
           },
         }),
         {
@@ -374,6 +378,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     }
 
     await db.delete(post).where(eq(post.id, existingPost.id));
+    await removePostFromIndex(existingPost.id);
 
     return new Response(
       JSON.stringify({

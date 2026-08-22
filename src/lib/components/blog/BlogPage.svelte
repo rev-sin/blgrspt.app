@@ -28,9 +28,10 @@
 
   interface Props {
     user: User;
+    isAdmin?: boolean;
   }
 
-  let { user }: Props = $props();
+  let { user, isAdmin = false }: Props = $props();
 
   let posts = $state<Post[]>([]);
   let loading = $state(true);
@@ -136,7 +137,7 @@
 </script>
 
 <div class="min-h-screen w-full bg-[#15100e] text-[#f4ebe3]">
-  <BlogHeader {user} active="dashboard" />
+  <BlogHeader {user} active="dashboard" {isAdmin} />
 
   <main class="mx-auto w-full max-w-6xl px-6 py-16">
     <div class="flex items-start justify-between gap-8">

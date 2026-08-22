@@ -252,6 +252,12 @@ GOOGLE_CLIENT_SECRET
 
 GITHUB_CLIENT_ID
 GITHUB_CLIENT_SECRET
+
+ALGOLIA_APP_ID
+ALGOLIA_SEARCH_API_KEY
+ALGOLIA_WRITE_API_KEY
+ALGOLIA_POSTS_INDEX
+ALGOLIA_USERS_INDEX
 ```
 
 These values are stored in Doppler rather than in `.env` files or the Git repository.
@@ -268,7 +274,25 @@ Just recipes that need secrets already wrap that for you. For example:
 just dev
 ```
 
-### 8. Database schema
+### 8. Sync Doppler secrets to Vercel
+
+Vercel does not read Doppler at runtime. Secrets are copied from Doppler configs into Vercel environments:
+
+```text
+Doppler prd  → Vercel Production
+Doppler stg  → Vercel Preview
+Doppler dev  → Vercel Development
+```
+
+After `vercel link`, run:
+
+```bash
+just vercel-sync-secrets
+```
+
+That copies `dev` secrets into Doppler `prd` and `stg` when needed, sets production `BETTER_AUTH_URL` to `https://blgrsptapp.vercel.app`, and uploads everything to Vercel. For automatic later updates, connect Doppler → Vercel in the Doppler dashboard (Integrations → Vercel).
+
+### 9. Database schema
 
 Better Auth uses Drizzle ORM to store authentication data in Neon.
 

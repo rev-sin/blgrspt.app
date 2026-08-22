@@ -12,10 +12,11 @@
 
   interface Props {
     user: User;
-    active?: "feed" | "dashboard";
+    active?: "feed" | "dashboard" | "admin";
+    isAdmin?: boolean;
   }
 
-  let { user, active = "feed" }: Props = $props();
+  let { user, active = "feed", isAdmin = false }: Props = $props();
 
   let loading = $state(false);
 
@@ -65,6 +66,19 @@
       >
         Dashboard
       </a>
+
+      {#if isAdmin}
+        <a
+          href="/admin"
+          class={`font-[Oxanium] text-xs uppercase tracking-[0.15em] transition ${
+            active === "admin"
+              ? "text-[#f7eee7]"
+              : "text-[#f7eee7]/45 hover:text-[#f7eee7]"
+          }`}
+        >
+          Admin
+        </a>
+      {/if}
 
       <a href={`/u/${user.id}`} class="rounded-full" aria-label="Your profile">
         <Avatar.Root class="size-10 border border-[#ffe1ca]/15">

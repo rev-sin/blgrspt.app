@@ -32,22 +32,34 @@
 
   interface Props {
     user: User;
+    isAdmin?: boolean;
   }
 
-  let { user }: Props = $props();
+  let { user, isAdmin = false }: Props = $props();
 
   let posts = $state<Post[]>([]);
+  let query = $state("");
   let loading = $state(true);
   let error = $state("");
 
-  async function loadPosts() {
+  async function loadPosts(event?: Event) {
+    event?.preventDefault();
     loading = true;
     error = "";
 
     try {
-      const response = await fetch(
-        "/api/v1/posts?status=published&visibility=public&sort=publishedAt&order=desc",
-      );
+      const params = new URLSearchParams({
+        status: "published",
+        visibility: "public",
+        sort: "publishedAt",
+        order: "desc",
+      });
+
+      if (query.trim()) {
+        params.set("q", query.trim());
+      }
+
+      const response = await fetch(`/api/v1/posts?${params.toString()}`);
 
       const result = await response.json();
 
@@ -71,7 +83,7 @@
 </script>
 
 <div class="min-h-screen w-full bg-[#15100e] text-[#f4ebe3]">
-  <BlogHeader {user} active="feed" />
+  <BlogHeader {user} active="feed" {isAdmin} />
 
   <main class="mx-auto w-full max-w-6xl px-6 py-16">
     <div class="flex items-start justify-between gap-8">
@@ -96,7 +108,23 @@
       <CreatePostButton />
     </div>
 
-    <section class="mt-16">
+    <form class="mt-10 flex flex-wrap gap-3" onsubmit={loadPosts}>
+      <input
+        bind:value={query}
+        type="search"
+        placeholder="Search posts"
+        class="h-10 min-w-56 flex-1 rounded-xl border border-[#ffe1ca]/10 bg-[#17110f] px-4 text-sm text-[#f4ebe3] outline-none placeholder:text-[#f4ebe3]/30 focus:border-[#ffe1ca]/25"
+      />
+
+      <button
+        type="submit"
+        class="h-10 rounded-xl border border-[#ffe1ca]/10 px-4 font-[Oxanium] text-[10px] uppercase tracking-[0.12em] text-[#d7a77e] transition hover:border-[#ffe1ca]/20 hover:text-[#f4ebe3]"
+      >
+        Search
+      </button>
+    </form>
+
+    <section class="mt-10">
       {#if loading}
         <div class="py-20 text-center">
           <p class="text-sm text-[#f4ebe3]/30">Loading feed...</p>
@@ -121,7 +149,9 @@
         <div
           class="rounded-2xl border border-[#ffe1ca]/10 bg-[#17110f] p-12 text-center"
         >
-          <p class="text-sm text-[#f4ebe3]/30">No public posts yet.</p>
+          <p class="text-sm text-[#f4ebe3]/30">
+            {query.trim() ? "No matching posts." : "No public posts yet."}
+          </p>
         </div>
       {:else}
         <div class="grid gap-5 md:grid-cols-2">

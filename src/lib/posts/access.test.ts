@@ -1,6 +1,12 @@
 import { describe, expect, test } from "bun:test";
 
-import { canViewPost, isInPublicFeed, isRestrictedListQuery, isShareablePost } from "./access";
+import {
+  canManagePost,
+  canViewPost,
+  isInPublicFeed,
+  isRestrictedListQuery,
+  isShareablePost,
+} from "./access";
 
 const publicPost = {
   status: "published",
@@ -63,6 +69,20 @@ describe("canViewPost", () => {
     expect(canViewPost(privatePost, null)).toBe(false);
     expect(canViewPost(privatePost, "someone-else")).toBe(false);
     expect(canViewPost(privatePost, "author-1")).toBe(true);
+  });
+
+  test("admins can view drafts and private posts", () => {
+    expect(canViewPost(draftPost, "someone-else", true)).toBe(true);
+    expect(canViewPost(privatePost, null, true)).toBe(true);
+  });
+});
+
+describe("canManagePost", () => {
+  test("only the author or an admin can manage a post", () => {
+    expect(canManagePost(draftPost, null)).toBe(false);
+    expect(canManagePost(draftPost, "someone-else")).toBe(false);
+    expect(canManagePost(draftPost, "author-1")).toBe(true);
+    expect(canManagePost(draftPost, "someone-else", true)).toBe(true);
   });
 });
 

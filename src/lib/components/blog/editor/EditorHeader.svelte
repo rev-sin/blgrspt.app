@@ -3,6 +3,7 @@
 
   interface Props {
     saving?: boolean;
+    backHref?: string;
     onSave: () => void;
     onPublishPrivate: () => void;
     onPublishUnlisted: () => void;
@@ -11,6 +12,7 @@
 
   let {
     saving = false,
+    backHref = "/dashboard",
     onSave,
     onPublishPrivate,
     onPublishUnlisted,
@@ -23,7 +25,7 @@
     class="mx-auto flex h-18 w-full max-w-7xl items-center justify-between gap-4 px-6"
   >
     <a
-      href="/dashboard"
+      href={backHref}
       class="font-[Oxanium] text-sm text-[#f7eee7]/60 transition hover:text-[#f7eee7]"
     >
       ← Back
