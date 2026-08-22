@@ -464,10 +464,6 @@ Production build
 
 All checks should pass before deployment.
 
-```
-
-One important thing: **don't put your actual Neon connection string, OAuth secrets, or Better Auth secret in this README.** Use placeholders like `your-neon-connection-string`.
-
-Your README will then explain the complete chain clearly:
 
 **Doppler stores secrets → `doppler run` injects them → Astro/Better Auth/Drizzle use them → Drizzle connects to Neon.**
+```
