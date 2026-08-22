@@ -1,5 +1,10 @@
 ---
+import { eq } from "drizzle-orm";
+
 import EditPostPage from "$lib/components/blog/editor/EditPostPage.svelte";
+import { db } from "$lib/db";
+import { post as postTable } from "$lib/db/schema";
+import { canViewPost } from "$lib/posts/access";
 import "../../../styles/global.css";
 
 export const prerender = false;
@@ -11,30 +16,35 @@ if (!slug) {
 }
 
 if (!Astro.locals.user) {
-  return Astro.redirect("/blog");
+  return Astro.redirect("/feed");
 }
 
-const apiUrl = new URL(
-  `/api/v1/posts/${encodeURIComponent(slug)}`,
-  Astro.url.origin,
-);
+const [post] = await db
+  .select()
+  .from(postTable)
+  .where(eq(postTable.slug, slug))
+  .limit(1);
 
-const response = await fetch(apiUrl);
-
-if (!response.ok) {
-  return Astro.redirect("/blog");
-}
-
-const result = await response.json();
-const post = result.data;
-
-if (!post) {
-  return Astro.redirect("/blog");
+if (!post || !canViewPost(post, Astro.locals.user.id)) {
+  return Astro.redirect("/dashboard");
 }
 
 if (post.authorId !== Astro.locals.user.id) {
   return Astro.redirect(`/blog/${post.slug}`);
 }
+
+const editorPost = {
+  id: post.id,
+  title: post.title,
+  slug: post.slug,
+  excerpt: post.excerpt,
+  content: post.content,
+  coverImage: post.coverImage,
+  tags: post.tags,
+  status: post.status as "draft" | "published",
+  visibility: post.visibility as "private" | "unlisted" | "public",
+  contentType: post.contentType,
+};
 ---
 
 <html lang="en">
@@ -45,6 +55,6 @@ if (post.authorId !== Astro.locals.user.id) {
   </head>
 
   <body class="bg-[#15100e]">
-    <EditPostPage post={post} />
+    <EditPostPage client:load post={editorPost} />
   </body>
 </html>

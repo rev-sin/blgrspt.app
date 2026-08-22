@@ -2,13 +2,15 @@ import type { APIRoute } from "astro";
 import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
 
 import { db } from "$lib/db";
-import { post } from "$lib/db/schema";
+import { post, user } from "$lib/db/schema";
+import { isRestrictedListQuery } from "$lib/posts/access";
+import { postWithAuthorColumns } from "$lib/posts/with-author";
 import { createPostSchema } from "$lib/validation/post";
 import { parsePostListQuery } from "$lib/validation/post-list";
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, locals }) => {
   try {
     const parsed = parsePostListQuery(url.searchParams);
 
@@ -26,8 +28,10 @@ export const GET: APIRoute = async ({ url }) => {
       limit,
       offset,
       status,
+      visibility,
       tag,
       authorId,
+      mine,
       createdAfter,
       createdBefore,
       createdAfterDate,
@@ -36,10 +40,39 @@ export const GET: APIRoute = async ({ url }) => {
       order,
     } = parsed.data;
 
+    const listingOwn = mine || isRestrictedListQuery(status, visibility);
+
+    if (listingOwn && !locals.user) {
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Authentication required",
+          },
+        }),
+        {
+          status: 401,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    }
+
     const conditions = [];
+
+    if (listingOwn && locals.user) {
+      conditions.push(eq(post.authorId, locals.user.id));
+    } else {
+      conditions.push(and(eq(post.status, "published"), eq(post.visibility, "public")));
+    }
 
     if (status) {
       conditions.push(eq(post.status, status));
+    }
+
+    if (visibility) {
+      conditions.push(eq(post.visibility, visibility));
     }
 
     if (tag) {
@@ -70,8 +103,9 @@ export const GET: APIRoute = async ({ url }) => {
     const orderBy = order === "asc" ? asc(sortColumn) : desc(sortColumn);
 
     const posts = await db
-      .select()
+      .select(postWithAuthorColumns)
       .from(post)
+      .innerJoin(user, eq(post.authorId, user.id))
       .where(whereClause)
       .orderBy(orderBy)
       .limit(limit)
@@ -98,8 +132,10 @@ export const GET: APIRoute = async ({ url }) => {
         },
         filters: {
           status,
+          visibility,
           tag,
           authorId,
+          mine,
           createdAfter,
           createdBefore,
         },
@@ -176,8 +212,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    const { title, slug, excerpt, content, coverImage, tags, status, contentType } = result.data;
+    const { title, slug, excerpt, content, coverImage, tags, status, visibility, contentType } =
+      result.data;
 
+    const nextVisibility = status === "draft" ? "private" : visibility;
     const publishedAt = status === "published" ? new Date() : null;
 
     const [createdPost] = await db
@@ -200,6 +238,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
         tags,
 
         status,
+
+        visibility: nextVisibility,
 
         contentType,
 

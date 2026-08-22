@@ -8,7 +8,7 @@
 
     await authClient.signIn.social({
       provider,
-      callbackURL: "/blog",
+      callbackURL: "/feed",
     });
 
     loading = false;

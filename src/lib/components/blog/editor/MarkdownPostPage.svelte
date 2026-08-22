@@ -34,7 +34,10 @@
     slug = generateSlug(value);
   }
 
-  async function createPost(status: "draft" | "published") {
+  async function createPost(
+    status: "draft" | "published",
+    visibility: "private" | "unlisted" | "public",
+  ) {
     if (saving) return;
 
     saving = true;
@@ -47,6 +50,7 @@
       coverImage: null,
       tags: [...tags],
       status,
+      visibility,
       contentType: "markdown",
     };
 
@@ -66,28 +70,49 @@
         return;
       }
 
-      console.log("Post created:", result);
+      if (
+        status === "draft" ||
+        visibility === "private" ||
+        visibility === "unlisted"
+      ) {
+        window.location.href = "/dashboard";
+        return;
+      }
 
-      // Redirect to blog after successful creation
-      window.location.href = "/blog";
+      window.location.href = `/blog/${result.data.slug}`;
     } catch (error) {
       console.error("Create post request failed:", error);
     } finally {
       saving = false;
     }
   }
+
   function saveDraft() {
-    return createPost("draft");
+    return createPost("draft", "private");
   }
 
-  function publish() {
-    return createPost("published");
+  function publishPrivate() {
+    return createPost("published", "private");
+  }
+
+  function publishUnlisted() {
+    return createPost("published", "unlisted");
+  }
+
+  function publishPublic() {
+    return createPost("published", "public");
   }
 </script>
 
 <div class="min-h-screen w-full bg-[#15100e] text-[#f4ebe3]">
   <div class="mx-auto w-full max-w-7xl px-6 py-6">
-    <EditorHeader onSave={saveDraft} onPublish={publish} />
+    <EditorHeader
+      {saving}
+      onSave={saveDraft}
+      onPublishPrivate={publishPrivate}
+      onPublishUnlisted={publishUnlisted}
+      onPublishPublic={publishPublic}
+    />
 
     <div class="mt-8">
       <EditorMeta

@@ -8,6 +8,8 @@
     content: string;
     coverImage: string | null;
     tags: string[];
+    authorId?: string;
+    authorName?: string;
     contentType: "markdown" | "text" | "tex";
     publishedAt: string | null;
     createdAt: string;
@@ -37,7 +39,7 @@
 <div class="min-h-screen bg-[#15100e] text-[#f4ebe3]">
   <main class="mx-auto w-full max-w-4xl px-6 py-16">
     <a
-      href="/blog"
+      href="/feed"
       class="font-[Oxanium] text-xs uppercase tracking-[0.2em] text-[#f7eee7]/30 transition hover:text-[#f7eee7]/60"
     >
       ← Back to blog
@@ -51,6 +53,25 @@
           >
             {post.contentType}
           </span>
+
+          {#if post.authorName}
+            <span class="text-[#f7eee7]/15">•</span>
+
+            {#if post.authorId}
+              <a
+                href={`/u/${post.authorId}`}
+                class="font-[Oxanium] text-[10px] uppercase tracking-[0.15em] text-[#f7eee7]/30 transition hover:text-[#f7eee7]/70"
+              >
+                {post.authorName}
+              </a>
+            {:else}
+              <span
+                class="font-[Oxanium] text-[10px] uppercase tracking-[0.15em] text-[#f7eee7]/30"
+              >
+                {post.authorName}
+              </span>
+            {/if}
+          {/if}
 
           {#if post.publishedAt}
             <span class="text-[#f7eee7]/15">•</span>

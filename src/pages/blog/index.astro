@@ -1,22 +1,9 @@
 ---
-import "../../styles/global.css";
-import BlogPage from "$lib/components/blog/BlogPage.svelte";
+export const prerender = false;
 
 if (!Astro.locals.user) {
   return Astro.redirect("/");
 }
 
-const user = Astro.locals.user;
+return Astro.redirect("/feed");
 ---
-
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>BlogPost</title>
-  </head>
-
-  <body>
-    <BlogPage client:load user={user} />
-  </body>
-</html>

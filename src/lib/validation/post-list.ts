@@ -4,13 +4,18 @@ export type PostSortField = (typeof POST_SORT_FIELDS)[number];
 
 export type PostListOrder = "asc" | "desc";
 
+const POST_STATUSES = new Set(["draft", "published"]);
+const POST_VISIBILITIES = new Set(["private", "unlisted", "public"]);
+
 export type PostListQuery = {
   page: number;
   limit: number;
   offset: number;
   status: string | null;
+  visibility: string | null;
   tag: string | null;
   authorId: string | null;
+  mine: boolean;
   createdAfter: string | null;
   createdBefore: string | null;
   createdAfterDate: Date | undefined;
@@ -45,8 +50,10 @@ export function parsePostListQuery(searchParams: URLSearchParams): ParsePostList
   const offset = (page - 1) * limit;
 
   const status = searchParams.get("status");
+  const visibility = searchParams.get("visibility");
   const tag = searchParams.get("tag");
   const authorId = searchParams.get("authorId");
+  const mine = searchParams.get("mine") === "true";
   const createdAfter = searchParams.get("createdAfter");
   const createdBefore = searchParams.get("createdBefore");
 
@@ -89,6 +96,26 @@ export function parsePostListQuery(searchParams: URLSearchParams): ParsePostList
     createdBeforeDate = date;
   }
 
+  if (status && !POST_STATUSES.has(status)) {
+    return {
+      success: false,
+      error: {
+        code: "INVALID_REQUEST",
+        message: "Invalid status. Allowed values: draft, published",
+      },
+    };
+  }
+
+  if (visibility && !POST_VISIBILITIES.has(visibility)) {
+    return {
+      success: false,
+      error: {
+        code: "INVALID_REQUEST",
+        message: "Invalid visibility. Allowed values: private, unlisted, public",
+      },
+    };
+  }
+
   if (!isPostSortField(sort)) {
     return {
       success: false,
@@ -116,8 +143,10 @@ export function parsePostListQuery(searchParams: URLSearchParams): ParsePostList
       limit,
       offset,
       status,
+      visibility,
       tag,
       authorId,
+      mine,
       createdAfter,
       createdBefore,
       createdAfterDate,

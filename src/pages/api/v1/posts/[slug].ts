@@ -1,11 +1,13 @@
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import { db } from "$lib/db";
-import { post } from "$lib/db/schema";
+import { post, user } from "$lib/db/schema";
+import { canViewPost } from "$lib/posts/access";
+import { postWithAuthorColumns } from "$lib/posts/with-author";
 import { updatePostSchema } from "$lib/validation/post";
 
 export const prerender = false;
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, locals }) => {
   try {
     const slug = params.slug;
 
@@ -26,7 +28,12 @@ export const GET: APIRoute = async ({ params }) => {
       );
     }
 
-    const [existingPost] = await db.select().from(post).where(eq(post.slug, slug)).limit(1);
+    const [existingPost] = await db
+      .select(postWithAuthorColumns)
+      .from(post)
+      .innerJoin(user, eq(post.authorId, user.id))
+      .where(eq(post.slug, slug))
+      .limit(1);
 
     if (!existingPost) {
       return new Response(
@@ -45,7 +52,7 @@ export const GET: APIRoute = async ({ params }) => {
       );
     }
 
-    if (existingPost.status !== "published") {
+    if (!canViewPost(existingPost, locals.user?.id)) {
       return new Response(
         JSON.stringify({
           error: {
@@ -189,7 +196,15 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
       );
     }
 
-    const { title, newSlug, excerpt, content, coverImage, tags, status } = result.data;
+    const { title, newSlug, excerpt, content, coverImage, tags, status, visibility } = result.data;
+
+    const nextStatus = status ?? existingPost.status;
+    const nextVisibility =
+      nextStatus === "draft" ? "private" : (visibility ?? existingPost.visibility);
+    const publishedAt =
+      nextStatus === "published" && !existingPost.publishedAt
+        ? new Date()
+        : existingPost.publishedAt;
 
     if (newSlug && newSlug !== existingPost.slug) {
       const [slugExists] = await db
@@ -225,7 +240,9 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
         content: content ?? existingPost.content,
         coverImage: coverImage !== undefined ? coverImage : existingPost.coverImage,
         tags: tags ?? existingPost.tags,
-        status: status ?? existingPost.status,
+        status: nextStatus,
+        visibility: nextVisibility,
+        publishedAt,
         updatedAt: new Date(),
       })
       .where(eq(post.id, existingPost.id))

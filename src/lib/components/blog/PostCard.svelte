@@ -2,6 +2,7 @@
   interface Post {
     id: string;
     authorId: string;
+    authorName: string;
     title: string;
     slug: string;
     excerpt: string | null;
@@ -9,6 +10,7 @@
     coverImage: string | null;
     tags: string[];
     status: "draft" | "published";
+    visibility: "private" | "unlisted" | "public";
     publishedAt?: string | null;
     createdAt: string;
     contentType: string;
@@ -24,6 +26,15 @@
   let deleting = $state(false);
 
   const isOwner = $derived(!!currentUserId && currentUserId === post.authorId);
+  const badge = $derived(
+    post.status === "draft"
+      ? "Draft"
+      : post.visibility === "private"
+        ? "Private"
+        : post.visibility === "unlisted"
+          ? "Unlisted"
+          : null,
+  );
 
   async function deletePost() {
     if (deleting || !isOwner) return;
@@ -66,12 +77,16 @@
          hover:border-[#ffe1ca]/20"
 >
   <div class="mb-6 flex items-center gap-3">
-    <span
+    <a
+      href={`/u/${post.authorId}`}
       class="font-[Oxanium] text-xs uppercase
-             tracking-[0.2em] text-[#d7a77e]/70"
+             tracking-[0.2em] text-[#d7a77e]/70
+             transition hover:text-[#f4ebe3]"
     >
-      {post.contentType}
-    </span>
+      {post.authorName}
+    </a>
+
+    <span class="text-xs text-[#f4ebe3]/30">·</span>
 
     <span class="text-xs text-[#f4ebe3]/30">
       {new Date(post.publishedAt ?? post.createdAt).toLocaleDateString(
@@ -83,6 +98,16 @@
         },
       )}
     </span>
+
+    {#if badge}
+      <span
+        class="rounded-full border border-[#ffe1ca]/15 px-2 py-0.5
+               font-[Oxanium] text-[10px] uppercase tracking-[0.12em]
+               text-[#d7a77e]/80"
+      >
+        {badge}
+      </span>
+    {/if}
   </div>
 
   <a href={`/blog/${post.slug}`} class="block">

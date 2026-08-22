@@ -1,0 +1,24 @@
+---
+import "../styles/global.css";
+import FeedPage from "$lib/components/blog/FeedPage.svelte";
+
+export const prerender = false;
+
+if (!Astro.locals.user) {
+  return Astro.redirect("/");
+}
+
+const user = Astro.locals.user;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Feed</title>
+  </head>
+
+  <body>
+    <FeedPage client:load user={user} />
+  </body>
+</html>

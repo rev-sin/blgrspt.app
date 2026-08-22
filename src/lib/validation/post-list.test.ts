@@ -17,8 +17,10 @@ describe("parsePostListQuery", () => {
       limit: 10,
       offset: 0,
       status: null,
+      visibility: null,
       tag: null,
       authorId: null,
+      mine: false,
       createdAfter: null,
       createdBefore: null,
       createdAfterDate: undefined,
@@ -34,8 +36,10 @@ describe("parsePostListQuery", () => {
         page: "3",
         limit: "25",
         status: "published",
+        visibility: "public",
         tag: "astro",
         authorId: "user-1",
+        mine: "true",
         createdAfter: "2026-01-01T00:00:00.000Z",
         createdBefore: "2026-12-31T23:59:59.000Z",
         sort: "title",
@@ -53,8 +57,10 @@ describe("parsePostListQuery", () => {
     expect(result.data.limit).toBe(25);
     expect(result.data.offset).toBe(50);
     expect(result.data.status).toBe("published");
+    expect(result.data.visibility).toBe("public");
     expect(result.data.tag).toBe("astro");
     expect(result.data.authorId).toBe("user-1");
+    expect(result.data.mine).toBe(true);
     expect(result.data.sort).toBe("title");
     expect(result.data.order).toBe("asc");
     expect(result.data.createdAfterDate?.toISOString()).toBe("2026-01-01T00:00:00.000Z");
@@ -90,6 +96,30 @@ describe("parsePostListQuery", () => {
     if (invalid.success) {
       expect(invalid.data.limit).toBe(10);
     }
+  });
+
+  test("rejects an invalid status", () => {
+    const result = parsePostListQuery(new URLSearchParams({ status: "archived" }));
+
+    expect(result).toEqual({
+      success: false,
+      error: {
+        code: "INVALID_REQUEST",
+        message: "Invalid status. Allowed values: draft, published",
+      },
+    });
+  });
+
+  test("rejects an invalid visibility", () => {
+    const result = parsePostListQuery(new URLSearchParams({ visibility: "friends" }));
+
+    expect(result).toEqual({
+      success: false,
+      error: {
+        code: "INVALID_REQUEST",
+        message: "Invalid visibility. Allowed values: private, unlisted, public",
+      },
+    });
   });
 
   test("rejects an invalid createdAfter date", () => {

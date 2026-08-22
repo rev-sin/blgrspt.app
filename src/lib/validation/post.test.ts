@@ -22,6 +22,7 @@ describe("createPostSchema", () => {
       ...validPost,
       tags: [],
       status: "draft",
+      visibility: "private",
       contentType: "markdown",
     });
   });
@@ -33,6 +34,7 @@ describe("createPostSchema", () => {
       coverImage: "https://example.com/cover.png",
       tags: ["astro", "svelte"],
       status: "published",
+      visibility: "public",
       contentType: "tex",
     });
 
@@ -122,11 +124,18 @@ describe("createPostSchema", () => {
     ).toBe(false);
   });
 
-  test("rejects unknown status and contentType values", () => {
+  test("rejects unknown status, visibility, and contentType values", () => {
     expect(
       createPostSchema.safeParse({
         ...validPost,
         status: "archived",
+      }).success,
+    ).toBe(false);
+
+    expect(
+      createPostSchema.safeParse({
+        ...validPost,
+        visibility: "friends",
       }).success,
     ).toBe(false);
 
