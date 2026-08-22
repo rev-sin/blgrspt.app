@@ -13,7 +13,7 @@ export const auth = betterAuth({
 
   trustedOrigins: [
     "http://localhost:4321",
-    process.env.BETTER_AUTH_URL!,
+    "https://blgrstapp.vercel.app",
   ],
 
   socialProviders: {
