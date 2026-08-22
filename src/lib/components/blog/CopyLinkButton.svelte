@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Button } from "$lib/components/ui/button";
+
   interface Props {
     slug: string;
   }
@@ -23,10 +25,12 @@
   }
 </script>
 
-<button
+<Button
   type="button"
+  variant="outline"
+  size="sm"
   onclick={copyLink}
-  class="rounded-lg border border-[#ffe1ca]/10 px-3 py-2 font-[Oxanium] text-[10px] uppercase tracking-[0.12em] text-[#f4ebe3]/50 transition hover:border-[#ffe1ca]/20 hover:text-[#f4ebe3]"
+  class="h-auto rounded-lg border-[#ffe1ca]/10 px-3 py-2 font-[Oxanium] text-[10px] tracking-[0.12em] text-[#f4ebe3]/50 hover:border-[#ffe1ca]/20 hover:text-[#f4ebe3]"
 >
   {copied ? "Copied" : "Copy link"}
-</button>
+</Button>

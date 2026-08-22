@@ -33,39 +33,55 @@
 
     <div class="flex flex-wrap items-center justify-end gap-3">
       <Button
+        type="button"
         variant="outline"
         size="sm"
         disabled={saving}
-        onclick={onSave}
+        onclick={(event) => {
+          event.preventDefault();
+          onSave();
+        }}
         class="rounded-xl border-[#ffe2cd]/10 bg-white/3 text-[#f5eee8] hover:bg-white/[0.07] hover:text-[#f5eee8]"
       >
         {saving ? "Saving..." : "Save Draft"}
       </Button>
 
       <Button
+        type="button"
         variant="outline"
         size="sm"
         disabled={saving}
-        onclick={onPublishPrivate}
+        onclick={(event) => {
+          event.preventDefault();
+          onPublishPrivate();
+        }}
         class="rounded-xl border-[#ffe2cd]/10 bg-white/3 text-[#f5eee8] hover:bg-white/[0.07] hover:text-[#f5eee8]"
       >
         Private
       </Button>
 
       <Button
+        type="button"
         variant="outline"
         size="sm"
         disabled={saving}
-        onclick={onPublishUnlisted}
+        onclick={(event) => {
+          event.preventDefault();
+          onPublishUnlisted();
+        }}
         class="rounded-xl border-[#ffe2cd]/10 bg-white/3 text-[#f5eee8] hover:bg-white/[0.07] hover:text-[#f5eee8]"
       >
         Unlisted
       </Button>
 
       <Button
+        type="button"
         size="sm"
         disabled={saving}
-        onclick={onPublishPublic}
+        onclick={(event) => {
+          event.preventDefault();
+          onPublishPublic();
+        }}
         class="rounded-xl bg-[#f4ebe3] text-[#15100e] hover:bg-[#fff7f0]"
       >
         Public

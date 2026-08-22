@@ -23,3 +23,14 @@ body {
 * {
   box-sizing: border-box;
 }
+
+.ts-chart-host {
+  color: rgba(244, 235, 227, 0.7);
+}
+
+mark {
+  background: rgba(215, 167, 126, 0.28);
+  color: inherit;
+  border-radius: 0.15rem;
+  padding: 0 0.12em;
+}

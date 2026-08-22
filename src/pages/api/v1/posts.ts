@@ -160,7 +160,17 @@ export const GET: APIRoute = async ({ url, locals }) => {
           const postsById = new Map(rankedPosts.map((item) => [item.id, item]));
           const posts = algolia.objectIDs.flatMap((id) => {
             const item = postsById.get(id);
-            return item ? [item] : [];
+
+            if (!item) {
+              return [];
+            }
+
+            return [
+              {
+                ...item,
+                highlight: algolia.highlights.get(id),
+              },
+            ];
           });
 
           return new Response(

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Textarea } from "$lib/components/ui/textarea";
+
   interface Props {
     value: string;
     textarea?: HTMLTextAreaElement | null;
@@ -21,12 +23,12 @@
   </div>
 
   <div class="min-h-0 flex-1 overflow-auto">
-    <textarea
-      bind:this={textarea}
+    <Textarea
+      bind:ref={textarea}
       bind:value
-      spellcheck="false"
+      spellcheck={false}
       placeholder="# Start writing..."
-      class="block h-full min-h-full w-full resize-none border-0 bg-transparent p-6 font-mono text-[15px] leading-7 text-[#f4ebe3]/90 outline-none placeholder:text-[#f4ebe3]/20 focus:ring-0"
-    ></textarea>
+      class="block h-full min-h-full w-full resize-none rounded-none border-0 bg-transparent p-6 font-mono text-[15px] leading-7 text-[#f4ebe3]/90 placeholder:text-[#f4ebe3]/20"
+    />
   </div>
 </section>

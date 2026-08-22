@@ -8,6 +8,10 @@ A modern, server-rendered blogging platform built with Astro, Svelte, Better Aut
 - **Rendering:** SSR
 - **UI:** Svelte 5
 - **UI Components:** shadcn-svelte
+- **Client data:** TanStack Query
+- **Tables:** TanStack Table
+- **Charts:** TanStack Charts
+- **Forms:** TanStack Form
 - **Styling:** Tailwind CSS v4
 - **Authentication:** Better Auth
 - **OAuth Providers:** Google, GitHub
@@ -545,7 +549,7 @@ Oxfmt + Prettier
 Production build
 ```
 
-Husky runs lint-staged on commit, Commitlint on the commit message, and the unit test suite on push. Use `just commit` for a conventional Commitizen prompt.
+Husky runs lint-staged (oxlint + format) on commit, Commitlint on the commit message, and oxlint plus the unit test suite on push. Use `just commit` for a conventional Commitizen prompt.
 
 All checks should pass before deployment.
 
