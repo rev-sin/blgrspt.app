@@ -1,6 +1,16 @@
+import DOMPurify from "isomorphic-dompurify";
 import { Marked } from "marked";
 import { markedHighlight } from "marked-highlight";
 import hljs from "highlight.js";
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
 const marked = new Marked(
   markedHighlight({
@@ -10,9 +20,10 @@ const marked = new Marked(
     highlight(code, lang) {
       const language = lang?.trim().toLowerCase();
 
-      // Mermaid is handled separately on the client.
+      // Mermaid is rendered separately on the client.
+      // Escape the source so it cannot inject HTML.
       if (language === "mermaid") {
-        return code;
+        return escapeHtml(code);
       }
 
       if (language && hljs.getLanguage(language)) {
@@ -26,6 +37,8 @@ const marked = new Marked(
   }),
 );
 
-export async function renderMarkdown(content: string) {
-  return marked.parse(content);
+export async function renderMarkdown(content: string): Promise<string> {
+  const html = await marked.parse(content);
+
+  return DOMPurify.sanitize(html);
 }

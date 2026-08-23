@@ -3,10 +3,10 @@ import { eq } from "drizzle-orm";
 
 import CopyLinkButton from "$lib/components/blog/CopyLinkButton.svelte";
 import MermaidInitializer from "$lib/components/blog/MermaidInitializer.svelte";
-
 import { db } from "$lib/db";
 import { post as postTable, user as userTable } from "$lib/db/schema";
-import { canViewPost } from "$lib/posts/access";
+import { isAdminUser } from "$lib/auth/rbac";
+import { canManagePost, canViewPost } from "$lib/posts/access";
 import { postWithAuthorColumns } from "$lib/posts/with-author";
 import { renderMarkdown } from "$lib/markdown";
 
@@ -27,13 +27,15 @@ const [post] = await db
   .where(eq(postTable.slug, slug))
   .limit(1);
 
-if (!post || !canViewPost(post, Astro.locals.user?.id)) {
+const viewerIsAdmin = isAdminUser(Astro.locals.user);
+
+if (!post || !canViewPost(post, Astro.locals.user?.id, viewerIsAdmin)) {
   return new Response("Post not found", { status: 404 });
 }
 
-const isOwner = !!Astro.locals.user && Astro.locals.user.id === post.authorId;
+const canEdit = canManagePost(post, Astro.locals.user?.id, viewerIsAdmin);
 
-const renderedContent = await renderMarkdown(post.content);
+const renderedContent = renderMarkdown(post.content);
 
 const visibilityLabel =
   post.status === "draft"
@@ -49,7 +51,6 @@ const visibilityLabel =
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-
     <title>{post.title} · blgrspt</title>
 
     {post.excerpt && <meta name="description" content={post.excerpt} />}
@@ -75,7 +76,7 @@ const visibilityLabel =
             <CopyLinkButton client:load slug={post.slug} />
 
             {
-              isOwner && (
+              canEdit && (
                 <a
                   href={`/blog/edit/${post.slug}`}
                   class="rounded-xl

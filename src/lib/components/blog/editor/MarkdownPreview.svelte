@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { onMount, tick } from "svelte";
-  import { marked } from "marked";
+  import { renderMarkdown } from "$lib/markdown";
 
   interface Props {
     content: string;
@@ -8,13 +7,27 @@
 
   let { content }: Props = $props();
 
-  let rendered = $derived(marked.parse(content));
-
+  let rendered = $state("");
   let container: HTMLElement | null = null;
 
   let mermaid: typeof import("mermaid").default | null = null;
+  let mermaidLoading = false;
 
-  onMount(async () => {
+  let renderVersion = 0;
+
+  async function ensureMermaid() {
+    if (mermaid || mermaidLoading || !container) {
+      return;
+    }
+
+    const hasMermaid = container.querySelector("pre code.language-mermaid");
+
+    if (!hasMermaid) {
+      return;
+    }
+
+    mermaidLoading = true;
+
     try {
       const module = await import("mermaid");
 
@@ -25,54 +38,67 @@
         securityLevel: "strict",
         theme: "dark",
         fontFamily: "Noto Sans Variable, sans-serif",
-
         themeVariables: {
           background: "#0d0a09",
-
           primaryColor: "#1b1411",
           primaryTextColor: "#f4ebe3",
           primaryBorderColor: "#d7a77e",
-
           lineColor: "#d7a77e",
-
           secondaryColor: "#17110f",
           secondaryTextColor: "#f4ebe3",
           secondaryBorderColor: "#d7a77e",
-
           tertiaryColor: "#1b1411",
           tertiaryTextColor: "#f4ebe3",
           tertiaryBorderColor: "#d7a77e",
-
           edgeLabelBackground: "#15100e",
-
           clusterBkg: "#17110f",
           clusterBorder: "#d7a77e",
         },
       });
-
-      await renderMermaid();
     } catch (error) {
       console.error("Mermaid initialization failed:", error);
+    } finally {
+      mermaidLoading = false;
     }
-  });
-
-  $effect(() => {
-    if (!mermaid) {
-      return;
-    }
-
-    updateMarkdown(content);
-  });
-
-  async function updateMarkdown(markdown: string) {
-    rendered = await marked.parse(markdown);
-
-    await tick();
-
-    await renderMermaid();
   }
 
-  async function renderMermaid() {
+  async function updatePreview(markdown: string) {
+    const currentVersion = ++renderVersion;
+
+    try {
+      const html = await renderMarkdown(markdown);
+
+      if (currentVersion !== renderVersion) {
+        return;
+      }
+
+      rendered = html;
+
+      await new Promise<void>((resolve) => {
+        queueMicrotask(resolve);
+      });
+
+      await ensureMermaid();
+
+      if (currentVersion !== renderVersion || !mermaid) {
+        return;
+      }
+
+      await renderMermaid(currentVersion);
+    } catch (error) {
+      console.error("Markdown rendering failed:", error);
+
+      if (currentVersion === renderVersion) {
+        rendered = `
+          <p class="markdown-render-error">
+            Unable to render Markdown preview.
+          </p>
+        `;
+      }
+    }
+  }
+
+  async function renderMermaid(currentVersion: number) {
     if (!container || !mermaid) {
       return;
     }
@@ -84,9 +110,17 @@
     }
 
     for (const block of blocks) {
+      if (currentVersion !== renderVersion) {
+        return;
+      }
+
       const pre = block.parentElement;
 
       if (!pre) {
+        continue;
+      }
+
+      if (pre.dataset.mermaidProcessed === "true") {
         continue;
       }
 
@@ -96,10 +130,11 @@
         continue;
       }
 
+      pre.dataset.mermaidProcessed = "true";
+
       const wrapper = document.createElement("div");
 
       wrapper.className = "mermaid-container";
-
       wrapper.textContent = "Rendering diagram...";
 
       pre.replaceWith(wrapper);
@@ -109,16 +144,25 @@
 
         const { svg } = await mermaid.render(id, source);
 
+        if (currentVersion !== renderVersion) {
+          return;
+        }
+
         wrapper.innerHTML = svg;
       } catch (error) {
         console.error("Mermaid rendering failed:", error);
 
         wrapper.className = "mermaid-container mermaid-error";
-
         wrapper.textContent = "Unable to render Mermaid diagram.";
       }
     }
   }
+
+  $effect(() => {
+    const currentContent = content;
+
+    void updatePreview(currentContent);
+  });
 </script>
 
 <section class="flex min-h-0 flex-col">
@@ -341,6 +385,12 @@
   :global(.mermaid-error) {
     color: rgba(248, 113, 113, 0.8);
     font-family: monospace;
+    font-size: 13px;
+  }
+
+  :global(.markdown-render-error) {
+    margin: 1rem 0;
+    color: rgba(248, 113, 113, 0.8);
     font-size: 13px;
   }
 </style>
