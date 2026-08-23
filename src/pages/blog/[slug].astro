@@ -1,13 +1,15 @@
 ---
 import { eq } from "drizzle-orm";
-import { marked } from "marked";
 
 import CopyLinkButton from "$lib/components/blog/CopyLinkButton.svelte";
-import { isAdminUser } from "$lib/auth/rbac";
+import MermaidInitializer from "$lib/components/blog/MermaidInitializer.svelte";
+
 import { db } from "$lib/db";
 import { post as postTable, user as userTable } from "$lib/db/schema";
-import { canManagePost, canViewPost } from "$lib/posts/access";
+import { canViewPost } from "$lib/posts/access";
 import { postWithAuthorColumns } from "$lib/posts/with-author";
+import { renderMarkdown } from "$lib/markdown";
+
 import "../../styles/global.css";
 
 export const prerender = false;
@@ -25,15 +27,13 @@ const [post] = await db
   .where(eq(postTable.slug, slug))
   .limit(1);
 
-const isAdmin = isAdminUser(Astro.locals.user);
-
-if (!post || !canViewPost(post, Astro.locals.user?.id, isAdmin)) {
+if (!post || !canViewPost(post, Astro.locals.user?.id)) {
   return new Response("Post not found", { status: 404 });
 }
 
-const canEdit = canManagePost(post, Astro.locals.user?.id, isAdmin);
+const isOwner = !!Astro.locals.user && Astro.locals.user.id === post.authorId;
 
-const renderedContent = await marked.parse(post.content);
+const renderedContent = await renderMarkdown(post.content);
 
 const visibilityLabel =
   post.status === "draft"
@@ -49,18 +49,24 @@ const visibilityLabel =
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>{post.title}</title>
+
+    <title>{post.title} · blgrspt</title>
+
+    {post.excerpt && <meta name="description" content={post.excerpt} />}
   </head>
 
   <body class="bg-[#15100e] text-[#f4ebe3]">
     <main class="min-h-screen">
       <article class="mx-auto w-full max-w-4xl px-6 py-16 md:py-24">
-        <div class="mb-12 flex items-center justify-between">
+        <!-- Navigation -->
+        <div class="mb-12 flex items-center justify-between gap-4">
           <a
             href="/feed"
-            class="inline-flex items-center font-[Oxanium] text-xs
-           uppercase tracking-[0.2em] text-[#f4ebe3]/40
-           transition hover:text-[#f4ebe3]"
+            class="font-[Oxanium] text-xs
+                   uppercase tracking-[0.2em]
+                   text-[#f4ebe3]/40
+                   transition
+                   hover:text-[#f4ebe3]"
           >
             ← Back
           </a>
@@ -69,18 +75,22 @@ const visibilityLabel =
             <CopyLinkButton client:load slug={post.slug} />
 
             {
-              canEdit && (
+              isOwner && (
                 <a
                   href={`/blog/edit/${post.slug}`}
-                  class="rounded-xl border border-[#ffe1ca]/10
-               bg-[#1b1411] px-4 py-2
-               font-[Oxanium] text-xs
-               uppercase tracking-[0.15em]
-               text-[#f4ebe3]/60
-               transition
-               hover:border-[#ffe1ca]/20
-               hover:bg-[#221915]
-               hover:text-[#f4ebe3]"
+                  class="rounded-xl
+                         border border-[#ffe1ca]/10
+                         bg-[#1b1411]
+                         px-4 py-2
+                         font-[Oxanium]
+                         text-xs
+                         uppercase
+                         tracking-[0.15em]
+                         text-[#f4ebe3]/60
+                         transition
+                         hover:border-[#ffe1ca]/20
+                         hover:bg-[#221915]
+                         hover:text-[#f4ebe3]"
                 >
                   Edit
                 </a>
@@ -89,17 +99,21 @@ const visibilityLabel =
           </div>
         </div>
 
+        <!-- Header -->
         <header class="mb-12">
-          <!-- Tags -->
           {
             post.tags?.length > 0 && (
               <div class="mb-6 flex flex-wrap gap-2">
                 {post.tags.map((tag: string) => (
                   <span
-                    class="rounded-full border border-[#ffe1ca]/10
-                           bg-[#1b1411] px-3 py-1
-                           font-[Oxanium] text-[10px]
-                           uppercase tracking-[0.15em]
+                    class="rounded-full
+                           border border-[#ffe1ca]/10
+                           bg-[#1b1411]
+                           px-3 py-1
+                           font-[Oxanium]
+                           text-[10px]
+                           uppercase
+                           tracking-[0.15em]
                            text-[#f4ebe3]/45"
                   >
                     #{tag}
@@ -109,20 +123,24 @@ const visibilityLabel =
             )
           }
 
-          <!-- Title -->
           <h1
-            class="font-[Oxanium] text-4xl font-medium
-                   tracking-[-1.5px] text-[#f7eee7]
+            class="font-[Oxanium]
+                   text-4xl
+                   font-medium
+                   tracking-[-1.5px]
+                   text-[#f7eee7]
                    md:text-6xl"
           >
             {post.title}
           </h1>
 
-          <!-- Excerpt -->
           {
             post.excerpt && (
               <p
-                class="mt-6 max-w-2xl text-lg leading-8
+                class="mt-6
+                       max-w-2xl
+                       text-lg
+                       leading-8
                        text-[#f4ebe3]/45"
               >
                 {post.excerpt}
@@ -130,16 +148,25 @@ const visibilityLabel =
             )
           }
 
-          <!-- Metadata -->
           <div
-            class="mt-8 flex items-center gap-3
-                   font-[Oxanium] text-[10px]
-                   uppercase tracking-[0.18em]
+            class="mt-8
+                   flex flex-wrap
+                   items-center
+                   gap-3
+                   font-[Oxanium]
+                   text-[10px]
+                   uppercase
+                   tracking-[0.18em]
                    text-[#f4ebe3]/25"
           >
             {
               visibilityLabel && (
-                <span class="rounded-full border border-[#ffe1ca]/15 px-2 py-1 text-[#d7a77e]/80">
+                <span
+                  class="rounded-full
+                         border border-[#ffe1ca]/15
+                         px-2 py-1
+                         text-[#d7a77e]/80"
+                >
                   {visibilityLabel}
                 </span>
               )
@@ -166,31 +193,14 @@ const visibilityLabel =
           </div>
         </header>
 
+        <!-- Divider -->
         <div class="h-px w-full bg-[#ffe1ca]/10"></div>
 
-        <!-- Markdown content -->
-        <article
-          class="prose prose-invert max-w-none py-12
-                 prose-headings:font-[Oxanium]
-                 prose-headings:font-medium
-                 prose-headings:text-[#f7eee7]
-                 prose-h1:text-4xl
-                 prose-h2:text-3xl
-                 prose-h3:text-2xl
-                 prose-p:text-[#f4ebe3]/75
-                 prose-p:leading-8
-                 prose-li:text-[#f4ebe3]/75
-                 prose-strong:text-[#f7eee7]
-                 prose-code:text-[#d7a77e]
-                 prose-code:before:content-none
-                 prose-code:after:content-none
-                 prose-a:text-[#d7a77e]
-                 prose-a:no-underline
-                 hover:prose-a:underline
-                 prose-blockquote:border-[#d7a77e]/30
-                 prose-blockquote:text-[#f4ebe3]/50"
-          set:html={renderedContent}
-        />
+        <!-- Markdown Content -->
+        <article class="markdown-content py-12" set:html={renderedContent} />
+
+        <!-- Mermaid -->
+        <MermaidInitializer client:load />
       </article>
     </main>
   </body>

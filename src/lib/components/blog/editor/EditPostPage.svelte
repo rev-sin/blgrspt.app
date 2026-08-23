@@ -23,13 +23,37 @@
     backHref?: string;
   }
 
-  let { post, backHref = "/dashboard" }: Props = $props();
+  let { post: initialPost, backHref = "/dashboard" }: Props = $props();
 
-  let title = $state(post.title);
-  let slug = $state(post.slug);
-  let excerpt = $state(post.excerpt ?? "");
-  let tags = $state<string[]>([...post.tags]);
-  let content = $state(post.content);
+  /*
+   * The post is loaded once when the editor opens.
+   *
+   * We intentionally copy the prop into local editable state.
+   * Using an effect avoids Svelte's "state_referenced_locally"
+   * warning while preserving the editor's local state.
+   */
+
+  let initialized = $state(false);
+
+  let title = $state("");
+  let slug = $state("");
+  let excerpt = $state("");
+  let tags = $state<string[]>([]);
+  let content = $state("");
+
+  $effect(() => {
+    if (initialized) {
+      return;
+    }
+
+    title = initialPost.title;
+    slug = initialPost.slug;
+    excerpt = initialPost.excerpt ?? "";
+    tags = [...initialPost.tags];
+    content = initialPost.content;
+
+    initialized = true;
+  });
 
   let saving = $state(false);
   let error = $state("");
@@ -83,7 +107,7 @@
 
     try {
       const response = await fetch(
-        `/api/v1/posts/${encodeURIComponent(post.slug)}`,
+        `/api/v1/posts/${encodeURIComponent(initialPost.slug)}`,
         {
           method: "PUT",
           credentials: "same-origin",
@@ -152,7 +176,9 @@
         variant="destructive"
         class="mt-6 border-red-400/10 bg-red-400/[0.03]"
       >
-        <Alert.Description class="text-red-300/70">{error}</Alert.Description>
+        <Alert.Description class="text-red-300/70">
+          {error}
+        </Alert.Description>
       </Alert.Root>
     {/if}
 

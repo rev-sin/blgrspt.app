@@ -4,7 +4,8 @@ import { db } from "$lib/db";
 import { post, user } from "$lib/db/schema";
 
 import { getAlgoliaSearchClient, getAlgoliaWriteClient } from "./client";
-import { getPostsIndexName, getUsersIndexName, isAlgoliaConfigured } from "./config";
+import { getPostsIndexName, getUsersIndexName } from "./config";
+//  isAlgoliaConfigured
 import { highlightFromResult, type PostHighlight } from "./highlight";
 import {
   toPostSearchRecord,
@@ -31,7 +32,7 @@ const postIndexColumns = {
   publishedAt: post.publishedAt,
 };
 
-export { isAlgoliaConfigured };
+// export { isAlgoliaConfigured };
 
 export async function indexPostById(postId: string) {
   const client = getAlgoliaWriteClient();
