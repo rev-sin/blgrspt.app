@@ -35,7 +35,7 @@ if (!post || !canViewPost(post, Astro.locals.user?.id, viewerIsAdmin)) {
 
 const canEdit = canManagePost(post, Astro.locals.user?.id, viewerIsAdmin);
 
-const renderedContent = renderMarkdown(post.content);
+const renderedContent = await renderMarkdown(post.content);
 
 const visibilityLabel =
   post.status === "draft"

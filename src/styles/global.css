@@ -1,8 +1,11 @@
 @import "tailwindcss";
+
 @import "tw-animate-css";
+
 @import "shadcn-svelte/tailwind.css";
 
 @import "@fontsource-variable/noto-sans";
+
 @import "@fontsource-variable/oxanium";
 
 html,
@@ -254,4 +257,34 @@ mark {
 
 .markdown-content ::selection {
   background: rgba(215, 167, 126, 0.25);
+}
+
+/* =========================================================
+   Mermaid Diagrams
+   ========================================================= */
+
+.markdown-content .mermaid-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 225, 202, 0.1);
+  border-radius: 0.75rem;
+  background: #0d0a09;
+}
+
+.markdown-content .mermaid-container svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.markdown-content .mermaid-error {
+  color: rgba(248, 113, 113, 0.8);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
 }

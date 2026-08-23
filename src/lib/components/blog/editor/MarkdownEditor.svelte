@@ -1,7 +1,7 @@
 <script lang="ts">
+  import EditorToolbar from "./EditorToolbar.svelte";
   import MarkdownPane from "./MarkdownPane.svelte";
   import MarkdownPreview from "./MarkdownPreview.svelte";
-  import EditorToolbar from "./EditorToolbar.svelte";
 
   interface Props {
     content?: string;
@@ -24,7 +24,6 @@
 
   function getSelectedLines(value: string, start: number, end: number) {
     const lineStart = value.lastIndexOf("\n", start - 1) + 1;
-
     const nextNewline = value.indexOf("\n", end);
     const lineEnd = nextNewline === -1 ? value.length : nextNewline;
 
@@ -40,7 +39,6 @@
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-
     const selected = content.slice(start, end);
 
     const replacement = `${before}${selected || "text"}${after}`;
@@ -58,7 +56,6 @@
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-
     const lines = getSelectedLines(content, start, end);
 
     const formatted = lines.text
@@ -86,7 +83,6 @@
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-
     const lines = getSelectedLines(content, start, end);
 
     const prefix = `${"#".repeat(level)} `;
@@ -119,9 +115,7 @@
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-
     const lines = getSelectedLines(content, start, end);
-
     const sourceLines = lines.text.split("\n");
 
     const isAlreadyFormatted = sourceLines.every((line) => {
@@ -165,9 +159,7 @@
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-
     const lines = getSelectedLines(content, start, end);
-
     const sourceLines = lines.text.split("\n");
 
     const isQuoted = sourceLines.every(
@@ -197,9 +189,7 @@
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-
     const selected = content.slice(start, end);
-
     const text = selected || "link text";
 
     const replacement = `[${text}](https://example.com)`;
@@ -217,15 +207,15 @@
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-
     const selected = content.slice(start, end);
 
-    const replacement = `![${selected || "image"}](https://example.com/image.png)`;
+    const alt = selected || "image";
+    const replacement = `![${alt}](https://example.com/image.png)`;
 
     content = content.slice(0, start) + replacement + content.slice(end);
 
     const altStart = start + 2;
-    const altEnd = altStart + (selected || "image").length;
+    const altEnd = altStart + alt.length;
 
     setSelection(textarea, altStart, altEnd);
   }
@@ -235,7 +225,6 @@
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-
     const selected = content.slice(start, end);
 
     // If multiple lines are selected, create a fenced code block.
@@ -244,7 +233,8 @@
 
       content = content.slice(0, start) + replacement + content.slice(end);
 
-      setSelection(textarea, start + 7, start + 7 + selected.length);
+      // "```ts\n" is 6 characters.
+      setSelection(textarea, start + 6, start + 6 + selected.length);
 
       return;
     }
