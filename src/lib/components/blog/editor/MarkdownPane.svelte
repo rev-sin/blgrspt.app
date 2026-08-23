@@ -27,8 +27,8 @@
       bind:ref={textarea}
       bind:value
       spellcheck={false}
-      placeholder="# Start writing..."
-      class="block h-full min-h-full w-full resize-none rounded-none border-0 bg-transparent p-6 font-mono text-[15px] leading-7 text-[#f4ebe3]/90 placeholder:text-[#f4ebe3]/20"
+      placeholder="Write your post in Markdown..."
+      class="block h-full min-h-full w-full resize-none rounded-none border-0 bg-transparent p-6 font-mono text-[15px] leading-7 text-[#f4ebe3]/90 placeholder:text-[#f4ebe3]/20 focus-visible:ring-0"
     />
   </div>
 </section>

@@ -1,9 +1,3 @@
-export const POST_STATUSES = ["draft", "published"] as const;
-export const POST_VISIBILITIES = ["private", "unlisted", "public"] as const;
-
-export type PostStatus = (typeof POST_STATUSES)[number];
-export type PostVisibility = (typeof POST_VISIBILITIES)[number];
-
 export type PostAccessFields = {
   status: string;
   visibility: string;
